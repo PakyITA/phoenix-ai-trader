@@ -10,7 +10,7 @@
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Demo](https://img.shields.io/badge/Demo-24h-orange?style=for-the-badge)
-![Versione](https://img.shields.io/badge/version-0.3.2-blue?style=for-the-badge)
+![Versione](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
 ![Licenza](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
 **🇬🇧 Documentazione inglese:** [README.md](README.md)
