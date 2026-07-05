@@ -71,7 +71,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=031",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=032",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -86,29 +86,36 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    config = {**entry.data, **entry.options}
     data_dir = entry.data[CONF_DATA_DIR]
 
     await hass.async_add_executor_job(
         ensure_data_files,
         data_dir,
-        float(entry.data.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)),
-        float(entry.data.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)),
-        int(entry.data.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)),
-        entry.data.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
-        entry.data.get(CONF_EMAIL, DEFAULT_EMAIL),
-        entry.data.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE),
-        bool(entry.data.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
-        entry.data.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE),
-        float(entry.data.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)),
-        float(entry.data.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)),
-        int(entry.data.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)),
+        float(config.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)),
+        float(config.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)),
+        int(config.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)),
+        config.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
+        config.get(CONF_EMAIL, DEFAULT_EMAIL),
+        config.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE),
+        bool(config.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
+        config.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE),
+        float(config.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)),
+        float(config.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)),
+        int(config.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)),
     )
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    hass.data[DOMAIN][entry.entry_id] = {**config, CONF_DATA_DIR: data_dir}
+
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
