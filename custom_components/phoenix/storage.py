@@ -5,7 +5,17 @@ import os
 from datetime import datetime
 from typing import Any
 
-from .const import HISTORY_FILENAME, SETTINGS_FILENAME, STATUS_FILENAME, TRADES_FILENAME
+from .const import (
+    DEFAULT_ALERT_COOLDOWN_HOURS,
+    DEFAULT_ALERT_THRESHOLD_EUR,
+    DEFAULT_ALERT_THRESHOLD_PERCENT,
+    DEFAULT_TELEGRAM_ENABLED,
+    DEFAULT_TELEGRAM_SERVICE,
+    HISTORY_FILENAME,
+    SETTINGS_FILENAME,
+    STATUS_FILENAME,
+    TRADES_FILENAME,
+)
 from .license import build_license_payload, evaluate_license
 
 
@@ -37,6 +47,11 @@ def ensure_data_files(
     duration_unit: str,
     email: str | None = None,
     license_key: str | None = None,
+    telegram_enabled: bool = DEFAULT_TELEGRAM_ENABLED,
+    telegram_service: str = DEFAULT_TELEGRAM_SERVICE,
+    alert_threshold_eur: float = DEFAULT_ALERT_THRESHOLD_EUR,
+    alert_threshold_percent: float = DEFAULT_ALERT_THRESHOLD_PERCENT,
+    alert_cooldown_hours: int = DEFAULT_ALERT_COOLDOWN_HOURS,
 ) -> None:
     os.makedirs(data_dir, exist_ok=True)
     now = now_string()
@@ -64,6 +79,14 @@ def ensure_data_files(
         "duration_unit": duration_unit,
         "created_at": existing_settings.get("created_at", now),
         "currency": "€",
+        "telegram_enabled": existing_settings.get("telegram_enabled", telegram_enabled),
+        "telegram_service": existing_settings.get("telegram_service", telegram_service),
+        "alert_threshold_eur": float(existing_settings.get("alert_threshold_eur", alert_threshold_eur)),
+        "alert_threshold_percent": float(existing_settings.get("alert_threshold_percent", alert_threshold_percent)),
+        "alert_cooldown_hours": int(existing_settings.get("alert_cooldown_hours", alert_cooldown_hours)),
+        "last_alert_at": existing_settings.get("last_alert_at"),
+        "last_alert_direction": existing_settings.get("last_alert_direction"),
+        "last_alert_value": existing_settings.get("last_alert_value"),
         **license_payload,
     }
 
@@ -115,12 +138,22 @@ def ensure_data_files(
         "trial_mode": license_state["license_status"] == "demo",
         "commercial_mode": True,
         "locked": license_state["demo_expired"],
+        "telegram_enabled": merged_settings.get("telegram_enabled", False),
+        "telegram_service": merged_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
+        "alert_threshold_eur": merged_settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
+        "alert_threshold_percent": merged_settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
+        "alert_cooldown_hours": merged_settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
     }
 
     write_json(settings_file, merged_settings)
     write_json(status_file, {**default_status, **existing_status, "version": "0.3.0", **commercial_state})
     write_json_if_missing(history_path(data_dir), [])
     write_json_if_missing(trades_path(data_dir), [])
+
+
+def update_settings(data_dir: str, updates: dict[str, Any]) -> None:
+    settings = read_settings(data_dir)
+    write_json(settings_path(data_dir), {**settings, **updates})
 
 
 def write_json_if_missing(path: str, payload: Any) -> None:
@@ -163,4 +196,9 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "trial_mode": license_state["license_status"] == "demo",
         "commercial_mode": True,
         "locked": license_state["demo_expired"],
+        "telegram_enabled": settings.get("telegram_enabled", False),
+        "telegram_service": settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
+        "alert_threshold_eur": settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
+        "alert_threshold_percent": settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
+        "alert_cooldown_hours": settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
     }
