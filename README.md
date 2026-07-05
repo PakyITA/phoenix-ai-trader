@@ -1,55 +1,129 @@
 <div align="center">
 
-<img src="docs/logo.png" width="180" alt="Logo Phoenix AI Trader">
+<img src="docs/logo.png" width="180" alt="Phoenix AI Trader Logo">
 
 # 🦅 Phoenix AI Trader
 
-### Paper Trading per Home Assistant
+### AI-powered Paper Trading for Home Assistant
 
-**Simula • Monitora • Impara • Migliora**
+**Simulate • Learn • Improve**
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
-![Demo](https://img.shields.io/badge/Demo-24h-orange?style=for-the-badge)
-![Versione](https://img.shields.io/badge/version-0.3.2-blue?style=for-the-badge)
-![Licenza](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
+![Trial](https://img.shields.io/badge/Trial-24h-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.3.2-blue?style=for-the-badge)
+![License](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
+
+**🇮🇹 Italian documentation:** [README.it.md](README.it.md)
+
+---
+
+**Phoenix AI Trader** brings an advanced **Paper Trading platform** directly into **Home Assistant**.
+
+Test trading strategies, monitor a virtual portfolio, track performance and improve your decision-making without risking real money.
+
+> ⚠️ **Phoenix AI Trader is designed exclusively for Paper Trading.**
+>
+> It never connects to cryptocurrency exchanges and never places real orders.
 
 </div>
 
 ---
 
-## 🇮🇹 Cos'è Phoenix AI Trader
+## ✨ Features
 
-**Phoenix AI Trader** è un'integrazione per **Home Assistant** pensata per simulare un portafoglio crypto in modalità **Paper Trading**.
+### 🧠 AI Paper Trading
 
-L'obiettivo è permettere all'utente di configurare un capitale virtuale, monitorare guadagni/perdite, seguire una missione personale e ricevere dati direttamente dentro Home Assistant tramite sensori nativi e pannello dedicato.
+Create and manage a completely virtual cryptocurrency portfolio.
 
-> ⚠️ **Phoenix AI Trader non esegue trading reale.**
->
-> Non si collega a Binance, Bybit, Coinbase o altri exchange e non invia ordini reali.
+Perfect for:
+
+- Learning trading concepts
+- Testing new strategies
+- Improving discipline
+- Monitoring simulated performance
+- Building Home Assistant automations around portfolio events
 
 ---
 
-## 🧱 Separazione dal vecchio progetto Python
+### 📊 Professional Dashboard
 
-Da questa versione l'integrazione Home Assistant è separata dal vecchio progetto Python.
+Phoenix includes an integrated Home Assistant dashboard with:
 
-### Vecchio progetto Python
+- 💰 Portfolio value
+- 📈 Equity
+- 📉 Profit / Loss
+- 🎯 Mission progress
+- 🏆 Top opportunities
+- 📊 Win rate
+- 🪙 Cryptocurrency logos
+- 🧠 AI score
+- 🔐 Trial / license status
 
-Il vecchio progetto può continuare a usare i suoi file, ad esempio:
+<p align="center">
+  <img src="docs/dashboard.png" width="95%" alt="Phoenix AI Trader Dashboard Preview">
+</p>
+
+---
+
+### 🏠 Native Home Assistant Integration
+
+Phoenix creates native Home Assistant entities such as:
+
+- Equity
+- Balance
+- Invested amount
+- Open value
+- Open profit / loss
+- Total profit
+- Total profit percentage
+- Win rate
+- Open positions
+- Closed trades
+- Top cryptocurrency
+- Last update
+- License status
+- Remaining trial time
+
+These entities can be used in dashboards, automations, scripts and notifications.
+
+---
+
+### ⚙️ Automatic Setup Wizard
+
+After installation, configure Phoenix from:
 
 ```text
-/config/phoenix-ai-trader/status.json
+Settings → Devices & services → Add integration → Phoenix AI Trader
 ```
 
-### Integrazione Home Assistant
+During the setup wizard you can configure:
 
-L'integrazione Home Assistant usa invece una cartella dedicata:
+- Data folder
+- Initial capital
+- Target capital
+- Mission duration
+- Email
+- Optional activation code
+- Optional Telegram notifications
+- Profit / loss alert threshold in EUR
+- Profit / loss alert threshold in percent
+- Alert cooldown time
+
+No manual YAML configuration is required.
+
+---
+
+## 🧱 Separation from the legacy Python project
+
+Phoenix AI Trader was originally developed as a standalone Python project.
+
+Starting from version **0.3.2**, the Home Assistant integration uses its own dedicated storage folder:
 
 ```text
 /config/phoenix-ai-trader-ha
 ```
 
-Dentro questa cartella vengono creati file con nomi specifici:
+The integration automatically creates these files:
 
 ```text
 phoenix_status.json
@@ -58,173 +132,123 @@ phoenix_history.json
 phoenix_trades.json
 ```
 
-Questa separazione evita che Home Assistant legga per errore il vecchio `status.json` del progetto Python.
-
----
-
-## ✨ Funzioni principali
-
-### 🏠 Integrazione nativa Home Assistant
-
-Phoenix crea sensori nativi utilizzabili in dashboard, automazioni e notifiche.
-
-Esempi di sensori:
-
-- Equity
-- Liquidità
-- Capitale investito
-- Profitto/perdita aperta
-- Profitto totale
-- Win rate
-- Trade aperti
-- Trade chiusi
-- Top crypto
-- Ultimo aggiornamento
-- Stato licenza
-- Tempo demo residuo
-
----
-
-## ⚙️ Wizard di configurazione
-
-Dopo l'installazione, Phoenix si configura da:
-
-```text
-Impostazioni → Dispositivi e servizi → Aggiungi integrazione → Phoenix AI Trader
-```
-
-Durante il wizard puoi impostare:
-
-- Cartella dati
-- Capitale iniziale
-- Capitale obiettivo
-- Durata della missione
-- Email
-- Codice di attivazione opzionale
-- Notifiche Telegram opzionali
-- Soglia di alert in euro
-- Soglia di alert in percentuale
-- Tempo minimo tra un alert e l'altro
-
-La cartella predefinita è:
-
-```text
-/config/phoenix-ai-trader-ha
-```
-
----
-
-## 📊 Dashboard integrata
-
-Phoenix include un pannello laterale dentro Home Assistant con una dashboard dedicata.
-
-La dashboard mostra:
-
-- Valore portafoglio
-- Equity
-- Guadagno/perdita
-- Stato demo/licenza
-- Progressione missione
-- Posizioni aperte
-- Statistiche principali
-
-<p align="center">
-  <img src="docs/dashboard.png" width="95%" alt="Anteprima dashboard Phoenix AI Trader">
-</p>
-
----
-
-## 📱 Notifiche Telegram
-
-Phoenix può inviare un avviso tramite un servizio `notify` di Home Assistant quando il portafoglio virtuale supera una determinata soglia di guadagno o perdita.
-
-Esempio di servizio:
-
-```text
-notify.telegram
-```
-
-Oppure, se in Home Assistant il servizio Telegram ha un altro nome, puoi inserirlo nel wizard.
-
----
-
-## ⏳ Demo 24 ore
-
-Phoenix include una demo locale di 24 ore.
-
-Durante la demo l'utente può provare dashboard e sensori. Alla scadenza, Phoenix può bloccare le funzioni principali fino all'inserimento di un codice di attivazione valido.
-
-> Nota: la demo è locale/offline. Senza un backend online di licenze, un utente tecnico potrebbe comunque aggirare i controlli locali.
-
----
-
-## 🔒 Sicurezza
-
-Phoenix AI Trader è pensato esclusivamente per **Paper Trading**.
-
-Phoenix:
-
-✅ non gestisce denaro reale  
-✅ non esegue ordini reali  
-✅ non si collega ad exchange crypto  
-✅ non richiede API key di trading  
-✅ lavora localmente dentro Home Assistant  
-
----
-
-## 📦 Installazione tramite HACS
-
-1. Apri HACS
-2. Vai su **Integrazioni**
-3. Aggiungi questo repository come custom repository
-4. Installa **Phoenix AI Trader**
-5. Riavvia Home Assistant
-6. Vai su **Impostazioni → Dispositivi e servizi**
-7. Aggiungi **Phoenix AI Trader**
-8. Completa il wizard
-
----
-
-## 🧹 Nota per chi usava il vecchio progetto
-
-Se sul sistema esiste già:
+This prevents conflicts with older standalone Python installations that may still use:
 
 ```text
 /config/phoenix-ai-trader/status.json
 ```
 
-non è un problema: da questa versione l'integrazione Home Assistant non lo usa più.
+If you already configured Phoenix in Home Assistant with the old folder, remove the integration from **Devices & services** and add it again using the new default folder.
 
-Per una nuova installazione pulita usa la cartella predefinita:
+---
+
+## ⏳ 24-hour Trial
+
+Phoenix AI Trader includes a complete local 24-hour trial.
+
+During the trial, users can test the full dashboard and sensors. When the trial expires, Phoenix can lock the main dashboard and sensors until a valid activation code is configured.
+
+> Note: the current trial system is local/offline. Without an online license backend, a determined technical user may still bypass local checks.
+
+---
+
+## 🎯 Mission Mode
+
+Set your personal investment challenge.
+
+Configure:
+
+- Initial capital
+- Target capital
+- Duration
+
+Phoenix automatically tracks:
+
+- Capital progress
+- Time progress
+- Goal completion
+
+---
+
+## 📱 Telegram Notifications
+
+Phoenix can send Home Assistant `notify` alerts when the simulated portfolio reaches a configured profit or loss threshold.
+
+Example service:
+
+```text
+notify.telegram
+```
+
+If your Home Assistant Telegram notification service has a different name, enter it in the setup wizard.
+
+---
+
+## 📦 Installation with HACS
+
+1. Open HACS
+2. Go to **Integrations**
+3. Add this repository as a custom repository
+4. Install **Phoenix AI Trader**
+5. Restart Home Assistant
+6. Go to **Settings → Devices & services**
+7. Add **Phoenix AI Trader**
+8. Complete the setup wizard
+
+---
+
+## 📁 Default Data Folder
 
 ```text
 /config/phoenix-ai-trader-ha
 ```
 
-Se avevi già configurato Phoenix in Home Assistant con la vecchia cartella, elimina l'integrazione da **Dispositivi e servizi** e aggiungila di nuovo usando la nuova cartella.
+The integration automatically generates all required files inside this folder.
 
 ---
 
-## 🛣️ Funzioni previste
+## 🔒 Safety
 
-Possibili sviluppi futuri:
+Phoenix AI Trader is **100% Paper Trading**.
 
-- Alert Telegram più avanzati
-- Grafici interattivi
-- Report PDF
-- Spiegazioni AI dei trade virtuali
-- Confronto strategie
-- Multi-portafoglio
-- Statistiche storiche
-- Backend licenze online
+It:
+
+✅ Never connects to Binance  
+✅ Never connects to Bybit  
+✅ Never connects to Coinbase  
+✅ Never executes real trades  
+✅ Never manages your funds  
+✅ Never requires exchange API keys  
+
+Everything is simulated locally inside Home Assistant.
 
 ---
 
-## 📜 Licenza
+## 📡 Planned Features
 
-Phoenix AI Trader è software proprietario commerciale.
+Upcoming releases may include:
 
-Una licenza valida concede l'uso personale e non trasferibile sulla propria istanza Home Assistant. Non è consentito redistribuire, rivendere, sublicenziare, pubblicare copie modificate o rendere il software disponibile a terzi senza autorizzazione scritta.
+- 📱 Advanced Telegram notifications
+- 📈 Profit / loss alerts
+- 🤖 AI trading assistant
+- 📊 Interactive charts
+- 📄 PDF reports
+- 📈 Strategy comparison
+- 🧠 AI trade explanations
+- 🌍 Multi-portfolio support
+- 📚 Trading statistics
+- 📉 Historical analytics
+- 🔐 Online license backend
+
+---
+
+## 📜 License
+
+Phoenix AI Trader is proprietary commercial software.
+
+A valid license grants personal, non-transferable use on the purchaser's own Home Assistant instance.
+
+Redistribution, resale, sublicensing, publishing modified copies, or making the software available to third parties is not allowed without written permission.
 
 ---
 
@@ -232,8 +256,8 @@ Una licenza valida concede l'uso personale e non trasferibile sulla propria ista
 
 ## 🦅 Phoenix AI Trader
 
-**Paper Trading per Home Assistant.**
+**AI-powered Paper Trading for Home Assistant.**
 
-Creato con ❤️ da PakyITA.
+Built with ❤️ by PakyITA.
 
 </div>
