@@ -29,10 +29,54 @@
       }
     },
     "error": {
-      "cannot_create_files": "Impossibile creare i file nella cartella indicata. Controlla percorso e permessi."
+      "cannot_create_files": "Impossibile creare i file nella cartella indicata. Controlla percorso e permessi.",
+      "invalid_data_dir": "Inserisci una cartella dati valida.",
+      "invalid_start_capital": "Il capitale iniziale deve essere maggiore di zero.",
+      "invalid_target_capital": "Il capitale obiettivo deve essere maggiore del capitale iniziale.",
+      "invalid_duration": "La durata deve essere maggiore di zero.",
+      "invalid_telegram_service": "Il servizio Telegram deve avere un formato valido, ad esempio notify.telegram.",
+      "invalid_alert_threshold": "La soglia alert non può essere negativa.",
+      "invalid_alert_cooldown": "Il tempo minimo tra due alert deve essere almeno 1 ora."
     },
     "abort": {
       "already_configured": "Phoenix AI Trader è già configurato per questa cartella dati."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configura Phoenix AI Trader",
+        "description": "Modifica capitale virtuale, missione, licenza, notifiche Telegram e soglie alert. La cartella dati resta quella scelta durante l'installazione.",
+        "data": {
+          "start_capital": "Capitale iniziale virtuale",
+          "target_capital": "Capitale obiettivo",
+          "duration_value": "Durata missione",
+          "duration_unit": "Unità di durata",
+          "email": "Email licenza",
+          "activation_code": "Codice di attivazione",
+          "telegram_enabled": "Abilita notifiche Telegram",
+          "telegram_service": "Servizio Telegram Home Assistant",
+          "alert_threshold_eur": "Soglia alert in euro",
+          "alert_threshold_percent": "Soglia alert in percentuale",
+          "alert_cooldown_hours": "Ore minime tra due alert"
+        },
+        "data_description": {
+          "activation_code": "Lascia vuoto per continuare con la demo di 24 ore.",
+          "telegram_service": "Esempio: notify.telegram.",
+          "alert_threshold_eur": "Phoenix invia un alert quando guadagno o perdita supera questa soglia.",
+          "alert_threshold_percent": "Soglia percentuale alternativa per gli alert.",
+          "alert_cooldown_hours": "Evita notifiche ripetute troppo ravvicinate."
+        }
+      }
+    },
+    "error": {
+      "cannot_create_files": "Impossibile aggiornare i file dati Phoenix. Controlla percorso e permessi.",
+      "invalid_start_capital": "Il capitale iniziale deve essere maggiore di zero.",
+      "invalid_target_capital": "Il capitale obiettivo deve essere maggiore del capitale iniziale.",
+      "invalid_duration": "La durata deve essere maggiore di zero.",
+      "invalid_telegram_service": "Il servizio Telegram deve avere un formato valido, ad esempio notify.telegram.",
+      "invalid_alert_threshold": "La soglia alert non può essere negativa.",
+      "invalid_alert_cooldown": "Il tempo minimo tra due alert deve essere almeno 1 ora."
     }
   }
 }
