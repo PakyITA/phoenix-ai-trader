@@ -19,6 +19,9 @@ from .const import (
 from .license import build_license_payload, evaluate_license
 
 
+PHOENIX_VERSION = "0.3.2"
+
+
 def now_string() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -92,7 +95,7 @@ def ensure_data_files(
 
     default_status = {
         "online": False,
-        "version": "0.3.0",
+        "version": PHOENIX_VERSION,
         "paper_trading": True,
         "last_update": now,
         "scanned_count": 0,
@@ -146,7 +149,7 @@ def ensure_data_files(
     }
 
     write_json(settings_file, merged_settings)
-    write_json(status_file, {**default_status, **existing_status, "version": "0.3.0", **commercial_state})
+    write_json(status_file, {**default_status, **existing_status, "version": PHOENIX_VERSION, **commercial_state})
     write_json_if_missing(history_path(data_dir), [])
     write_json_if_missing(trades_path(data_dir), [])
 
@@ -183,7 +186,7 @@ def read_settings(data_dir: str) -> dict[str, Any]:
 def read_status(data_dir: str) -> dict[str, Any]:
     path = status_path(data_dir)
     if not os.path.exists(path):
-        return {"online": False, "error": "status.json not found"}
+        return {"online": False, "error": f"{STATUS_FILENAME} not found"}
 
     status = read_json(path, default={})
     settings = read_settings(data_dir)
