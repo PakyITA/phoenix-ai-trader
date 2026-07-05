@@ -60,6 +60,8 @@ For the first **15 days**, the personal Phoenix AI Trader license is available f
 
 After the launch offer ends, the standard license price is **19.99 €**.
 
+👉 **Buy the launch license:** https://paypal.me/PakyDJ/9.99EUR
+
 Licenses are:
 
 - linked to the buyer's PayPal email
@@ -67,7 +69,7 @@ Licenses are:
 - valid for one Home Assistant installation
 - verified locally using a signed offline license
 
-To buy a license, contact the developer after installation or use the PayPal instructions shown in the Phoenix dashboard when the trial expires.
+After payment, the signed license is sent by email. To buy a license, use the PayPal link above or follow the instructions shown in the Phoenix dashboard when the trial expires.
 
 ---
 
