@@ -113,35 +113,6 @@ Non è richiesta alcuna configurazione YAML manuale.
 
 ---
 
-## 🧱 Separazione dal vecchio progetto Python
-
-Phoenix AI Trader nasce inizialmente come progetto Python standalone.
-
-Dalla versione **0.3.2**, l'integrazione Home Assistant utilizza una cartella dati dedicata:
-
-```text
-/config/phoenix-ai-trader-ha
-```
-
-L'integrazione crea automaticamente questi file:
-
-```text
-phoenix_status.json
-phoenix_settings.json
-phoenix_history.json
-phoenix_trades.json
-```
-
-Questa separazione evita conflitti con vecchie installazioni Python standalone che potrebbero ancora usare:
-
-```text
-/config/phoenix-ai-trader/status.json
-```
-
-Se avevi già configurato Phoenix in Home Assistant con la vecchia cartella, elimina l'integrazione da **Dispositivi e servizi** e aggiungila nuovamente usando la nuova cartella predefinita.
-
----
-
 ## ⏳ Demo 24 ore
 
 Phoenix AI Trader include una demo locale completa di 24 ore.
