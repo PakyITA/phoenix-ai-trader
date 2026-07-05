@@ -19,7 +19,7 @@ from .const import (
 from .license import build_license_payload, evaluate_license
 
 
-PHOENIX_VERSION = "0.3.3"
+PHOENIX_VERSION = "0.3.4"
 
 
 def now_string() -> str:
