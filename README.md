@@ -8,10 +8,10 @@
 
 **Simulate • Learn • Improve**
 
-![GitHub release](https://img.shields.io/github/v/release/PakyITA/phoenix-ai-trader?style=for-the-badge)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
-![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge)
-![License](https://img.shields.io/github/license/PakyITA/phoenix-ai-trader?style=for-the-badge)
+![Trial](https://img.shields.io/badge/Trial-24h-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.3.0-blue?style=for-the-badge)
+![License](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
 ---
 
@@ -54,6 +54,17 @@ Integrated Home Assistant dashboard with:
 - 📊 Win Rate
 - 🪙 Cryptocurrency Logos
 - 🧠 AI Score
+- 🔐 Trial / License status
+
+---
+
+## ⏳ 24-hour Trial
+
+Phoenix AI Trader includes a complete local 24-hour trial.
+
+During the trial, users can test the full dashboard and sensors. When the trial expires, Phoenix locks the main dashboard and sensors until a valid activation code is configured.
+
+> Note: the current trial system is local/offline. Without an online license backend, a determined technical user may still bypass local checks.
 
 ---
 
@@ -66,14 +77,6 @@ Configure:
 - Initial Capital
 - Target Capital
 - Duration
-
-Supported time units:
-
-- Hours
-- Days
-- Weeks
-- Months
-- Years
 
 Phoenix automatically tracks:
 
@@ -97,6 +100,8 @@ Phoenix creates native entities such as:
 - Closed Trades
 - Top Cryptocurrency
 - Last Update
+- License Status
+- Trial Remaining Time
 
 Perfect for dashboards, automations and notifications.
 
@@ -110,6 +115,8 @@ During installation you'll configure:
 - Initial Capital
 - Target Capital
 - Investment Duration
+- Email
+- Optional activation code
 
 Phoenix automatically creates:
 
@@ -120,39 +127,13 @@ history.json
 trades.json
 ```
 
-No manual configuration required.
-
----
-
-# 🚀 Installation
-
-## Install with HACS
-
-Add this repository as a Custom Repository:
-
-```
-https://github.com/PakyITA/phoenix-ai-trader
-```
-
-Category:
-
-```
-Integration
-```
-
-Then:
-
-1. Install Phoenix AI Trader
-2. Restart Home Assistant
-3. Open **Settings → Devices & Services**
-4. Click **Add Integration**
-5. Search for **Phoenix AI Trader**
+No manual YAML configuration required.
 
 ---
 
 # 📁 Default Data Folder
 
-```
+```text
 /config/phoenix-ai-trader
 ```
 
@@ -170,15 +151,14 @@ The integration automatically generates all required files.
 
 ---
 
-# 📡 Future Features
+# 📡 Planned Features
 
-Phoenix AI Trader is actively developed.
+Upcoming releases may include:
 
-Upcoming releases will include:
-
+- 📱 Telegram Notifications
+- 📈 Profit / Loss alerts
 - 🤖 AI Trading Assistant
 - 📊 Interactive Charts
-- 📱 Telegram Notifications
 - 📄 PDF Reports
 - 📈 Strategy Comparison
 - 🧠 AI Trade Explanations
@@ -208,22 +188,11 @@ Everything is simulated locally inside Home Assistant.
 
 ---
 
-# 🤝 Contributing
-
-Contributions are always welcome.
-
-You can help by:
-
-- Reporting bugs
-- Suggesting new features
-- Improving the documentation
-- Opening Pull Requests
-
----
-
 # 📜 License
 
-MIT License
+Phoenix AI Trader is proprietary commercial software.
+
+A valid license grants personal, non-transferable use on the purchaser's own Home Assistant instance. Redistribution, resale, sublicensing, publishing modified copies, or making the software available to third parties is not allowed without written permission.
 
 ---
 
@@ -231,8 +200,8 @@ MIT License
 
 ## 🦅 Phoenix AI Trader
 
-**The first AI-powered Paper Trading platform for Home Assistant.**
+**AI-powered Paper Trading for Home Assistant.**
 
-Built with ❤️ by the Home Assistant community.
+Built with ❤️ by PakyITA.
 
 </div>
