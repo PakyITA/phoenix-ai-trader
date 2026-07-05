@@ -1,46 +1,40 @@
 from __future__ import annotations
 
-import logging
-from pathlib import Path
-
-from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, PLATFORMS
-
-_LOGGER = logging.getLogger(__name__)
+from .const import (
+    CONF_DATA_DIR,
+    CONF_DURATION_UNIT,
+    CONF_DURATION_VALUE,
+    CONF_START_CAPITAL,
+    CONF_TARGET_CAPITAL,
+    DEFAULT_DURATION_UNIT,
+    DEFAULT_DURATION_VALUE,
+    DEFAULT_START_CAPITAL,
+    DEFAULT_TARGET_CAPITAL,
+    DOMAIN,
+    PLATFORMS,
+)
+from .storage import ensure_data_files
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    frontend.async_register_built_in_panel(
-        hass,
-        component_name="custom",
-        sidebar_title="Phoenix AI Trader",
-        sidebar_icon="mdi:chart-line",
-        frontend_url_path="phoenix-ai-trader",
-        config={
-            "_panel_custom": {
-                "name": "phoenix-ai-trader-panel",
-                "module_url": "/phoenix_ai_trader/phoenix-panel.js",
-                "embed_iframe": False,
-                "trust_external_script": False,
-            }
-        },
-        require_admin=False,
-    )
-
-    local_path = Path(__file__).parent / "www"
-    hass.http.register_static_path(
-        "/phoenix_ai_trader",
-        str(local_path),
-        cache_headers=False,
-    )
-
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    data_dir = entry.data[CONF_DATA_DIR]
+
+    await hass.async_add_executor_job(
+        ensure_data_files,
+        data_dir,
+        float(entry.data.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)),
+        float(entry.data.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)),
+        int(entry.data.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)),
+        entry.data.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
+    )
+
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
 

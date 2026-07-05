@@ -1,21 +1,15 @@
 from __future__ import annotations
 
-import json
-import logging
-import os
 from dataclasses import dataclass
-from datetime import timedelta
-from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_DATA_DIR, STATUS_FILENAME
-
-_LOGGER = logging.getLogger(__name__)
+from .const import CONF_DATA_DIR
+from .coordinator import PhoenixDataUpdateCoordinator
 
 
 @dataclass(frozen=True)
@@ -43,36 +37,13 @@ SENSORS = [
 ]
 
 
-class PhoenixDataUpdateCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass: HomeAssistant, status_path: str):
-        super().__init__(
-            hass,
-            _LOGGER,
-            name="Phoenix AI Trader",
-            update_interval=timedelta(seconds=30),
-        )
-        self.status_path = status_path
-
-    async def _async_update_data(self) -> dict[str, Any]:
-        return await self.hass.async_add_executor_job(self._read_status)
-
-    def _read_status(self) -> dict[str, Any]:
-        if not os.path.exists(self.status_path):
-            return {"online": False, "error": "status.json not found"}
-
-        with open(self.status_path, "r", encoding="utf-8") as file:
-            return json.load(file)
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     data_dir = entry.data[CONF_DATA_DIR]
-    status_path = os.path.join(data_dir, STATUS_FILENAME)
-
-    coordinator = PhoenixDataUpdateCoordinator(hass, status_path)
+    coordinator = PhoenixDataUpdateCoordinator(hass, data_dir)
     await coordinator.async_config_entry_first_refresh()
 
     async_add_entities(
@@ -80,12 +51,8 @@ async def async_setup_entry(
     )
 
 
-class PhoenixSensor(CoordinatorEntity, SensorEntity):
-    def __init__(
-        self,
-        coordinator: PhoenixDataUpdateCoordinator,
-        description: PhoenixSensorDescription,
-    ):
+class PhoenixSensor(CoordinatorEntity[PhoenixDataUpdateCoordinator], SensorEntity):
+    def __init__(self, coordinator: PhoenixDataUpdateCoordinator, description: PhoenixSensorDescription):
         super().__init__(coordinator)
         self.description = description
         self._attr_name = f"Phoenix {description.name}"
@@ -106,4 +73,6 @@ class PhoenixSensor(CoordinatorEntity, SensorEntity):
             "positions": self.coordinator.data.get("positions"),
             "top20": self.coordinator.data.get("top20"),
             "mission": self.coordinator.data.get("mission"),
+            "best_trade": self.coordinator.data.get("best_trade"),
+            "worst_trade": self.coordinator.data.get("worst_trade"),
         }
