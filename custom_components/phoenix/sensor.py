@@ -34,6 +34,8 @@ SENSORS = [
     PhoenixSensorDescription("top_crypto", "Top Crypto", None, "mdi:bitcoin"),
     PhoenixSensorDescription("scanned_count", "Crypto Scansionate", None, "mdi:radar"),
     PhoenixSensorDescription("last_update", "Ultimo Aggiornamento", None, "mdi:clock"),
+    PhoenixSensorDescription("license_status", "Stato Licenza", None, "mdi:key-chain"),
+    PhoenixSensorDescription("demo_remaining_seconds", "Secondi Demo Residui", "s", "mdi:timer-outline"),
 ]
 
 
@@ -62,6 +64,12 @@ class PhoenixSensor(CoordinatorEntity[PhoenixDataUpdateCoordinator], SensorEntit
 
     @property
     def native_value(self):
+        if self.coordinator.data.get("locked") and self.description.key not in {
+            "license_status",
+            "demo_remaining_seconds",
+            "last_update",
+        }:
+            return None
         return self.coordinator.data.get(self.description.key)
 
     @property
@@ -70,6 +78,14 @@ class PhoenixSensor(CoordinatorEntity[PhoenixDataUpdateCoordinator], SensorEntit
             "paper_trading": self.coordinator.data.get("paper_trading", True),
             "online": self.coordinator.data.get("online"),
             "version": self.coordinator.data.get("version"),
+            "commercial_mode": self.coordinator.data.get("commercial_mode"),
+            "license_status": self.coordinator.data.get("license_status"),
+            "licensed": self.coordinator.data.get("licensed"),
+            "trial_mode": self.coordinator.data.get("trial_mode"),
+            "locked": self.coordinator.data.get("locked"),
+            "demo_expired": self.coordinator.data.get("demo_expired"),
+            "demo_expires_at": self.coordinator.data.get("demo_expires_at"),
+            "demo_remaining_seconds": self.coordinator.data.get("demo_remaining_seconds"),
             "positions": self.coordinator.data.get("positions"),
             "top20": self.coordinator.data.get("top20"),
             "mission": self.coordinator.data.get("mission"),
