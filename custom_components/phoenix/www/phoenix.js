@@ -5,7 +5,8 @@ const STATUS_URLS = [
 ];
 
 const CONTACT_EMAIL = "pasquale.play4@gmail.com";
-const PAYPAL_TEXT = "Richiedi link PayPal";
+const PAYPAL_LINK = "https://paypal.me/PakyDJ/9.99EUR";
+const PAYPAL_TEXT = "Acquista licenza 9,99 €";
 
 const COINS = {
   BTC: ["Bitcoin", "₿"], ETH: ["Ethereum", "◆"], SOL: ["Solana", "◎"],
@@ -64,21 +65,22 @@ function rows(items) {
 
 function renderLocked(data) {
   const subject = encodeURIComponent("Licenza Phoenix AI Trader");
-  const body = encodeURIComponent(`Ciao, vorrei acquistare una licenza Phoenix AI Trader.\n\nEmail Home Assistant/PayPal: ${data.email || ""}\nStato licenza: ${data.license_status || "expired"}`);
+  const body = encodeURIComponent(`Ciao, ho acquistato la licenza Phoenix AI Trader da PayPal.\n\nEmail Home Assistant/PayPal: ${data.email || ""}\nStato licenza: ${data.license_status || "expired"}`);
   app.innerHTML = `
     <section class="locked">
       <div class="locked-box">
         <h2>🚀 Continua con Phoenix AI Trader</h2>
         <p>Phoenix ha completato la demo gratuita di 24 ore.</p>
-        <div class="license-badge">🔑 Licenza personale · PayPal · invio via email</div>
+        <div class="license-badge">🔑 Offerta lancio 9,99 € · poi 19,99 €</div>
         <p>Per continuare a usare dashboard, sensori, monitoraggio P/L e alert Telegram, acquista una licenza personale. Dopo il pagamento riceverai un codice licenza firmato da inserire in Home Assistant.</p>
         <div class="steps">
-          <div class="step"><b>1. Paga con PayPal</b><br><span class="small">Usa l'email che vuoi associare alla licenza.</span></div>
-          <div class="step"><b>2. Ricevi il codice</b><br><span class="small">La licenza viene inviata via email dopo il pagamento.</span></div>
+          <div class="step"><b>1. Paga con PayPal</b><br><span class="small">Offerta lancio: 9,99 € per 15 giorni.</span></div>
+          <div class="step"><b>2. Invia conferma</b><br><span class="small">Usa l'email PayPal/Home Assistant per ricevere il codice.</span></div>
           <div class="step"><b>3. Attiva Phoenix</b><br><span class="small">Vai su Phoenix AI Trader → Configura e incolla il codice.</span></div>
         </div>
         <p class="small">Stato attuale: ${data.license_status || "expired"} · Email configurata: ${data.email || "non impostata"}</p>
-        <a class="btn btn-pay" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">💳 ${PAYPAL_TEXT}</a>
+        <a class="btn btn-pay" href="${PAYPAL_LINK}" target="_blank" rel="noopener">💳 ${PAYPAL_TEXT}</a>
+        <a class="btn" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">📩 Ho pagato, richiedo licenza</a>
         <a class="btn" href="/config/integrations">⚙️ Apri integrazioni</a>
       </div>
     </section>`;
