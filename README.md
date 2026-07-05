@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/logo.png" alt="Phoenix AI Trader Logo" width="180">
+  <img src="https://raw.githubusercontent.com/PakyITA/phoenix-ai-trader/main/docs/logo.png" width="180" alt="Phoenix AI Trader Logo">
 </p>
 
 # 🦅 Phoenix AI Trader
