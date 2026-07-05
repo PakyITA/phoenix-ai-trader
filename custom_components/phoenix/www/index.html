@@ -5,292 +5,44 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Phoenix AI Trader</title>
 <style>
-body{margin:0;font-family:system-ui;background:#020617;color:#e5e7eb;padding:18px}
-.wrap{max-width:1200px;margin:auto}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.card{background:#111827;border:1px solid #334155;border-radius:18px;padding:16px}.full{grid-column:1/-1}.wide{grid-column:span 2}
-.label{color:#94a3b8;font-size:.85rem}.val{font-size:1.7rem;font-weight:800}.good{color:#22c55e}.bad{color:#ef4444}.warn{color:#f59e0b}.accent{color:#38bdf8}
-table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #334155;text-align:left}th{color:#94a3b8}
-.coin{display:flex;align-items:center;gap:9px}.logo{font-size:1.35rem}.coin-name{font-weight:750}.ticker{color:#94a3b8;font-size:.8rem}
-.bar{background:#0f172a;border:1px solid #334155;border-radius:99px;height:20px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0}.fill-time{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);width:0}
-.small{color:#94a3b8;font-size:.9rem}
-.notice{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fbbf24;border-radius:14px;padding:12px 14px;margin:12px 0;font-weight:700}
-input,select{background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:10px;padding:9px;width:100%}
-button{background:#0284c7;color:white;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
-button:hover{background:#0369a1}.danger{background:#b91c1c}.danger:hover{background:#991b1b}
-.form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}
-@media(max-width:900px){.grid{grid-template-columns:1fr}.wide{grid-column:1}.form-grid{grid-template-columns:1fr}}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#020617;color:#e5e7eb;padding:18px}.wrap{max-width:1200px;margin:auto}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#111827;border:1px solid #334155;border-radius:18px;padding:16px}.full{grid-column:1/-1}.wide{grid-column:span 2}.label{color:#94a3b8;font-size:.85rem}.val{font-size:1.7rem;font-weight:800}.good{color:#22c55e}.bad{color:#ef4444}.warn{color:#f59e0b}.accent{color:#38bdf8}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #334155;text-align:left}th{color:#94a3b8}.bar{background:#0f172a;border:1px solid #334155;border-radius:99px;height:20px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0}.fill-time{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);width:0}.small{color:#94a3b8;font-size:.9rem}.notice{border-radius:14px;padding:12px 14px;margin:12px 0;font-weight:700}.paper{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.45);color:#7dd3fc}.trial{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fbbf24}.active{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.45);color:#86efac}.expired{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.55);color:#fecaca}.lock{min-height:55vh;display:flex;align-items:center;justify-content:center;text-align:center}.lock-box{max-width:680px;background:#111827;border:1px solid rgba(239,68,68,.55);border-radius:24px;padding:32px;box-shadow:0 20px 80px rgba(0,0,0,.35)}.lock-box h2{font-size:2rem;margin:0 0 12px}.btn{display:inline-block;background:#0284c7;color:white;text-decoration:none;border-radius:12px;padding:12px 16px;font-weight:800;margin-top:12px}.btn:hover{background:#0369a1}.coin{display:flex;align-items:center;gap:9px}.logo{font-size:1.35rem}.coin-name{font-weight:750}.ticker{color:#94a3b8;font-size:.8rem}input,select{background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:10px;padding:9px;width:100%}button{background:#0284c7;color:white;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}.form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}@media(max-width:900px){.grid{grid-template-columns:1fr}.wide{grid-column:1}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>🦅 Phoenix AI Trader</h1>
-<div class="notice">🧪 MODALITÀ PAPER TRADING — simulazione virtuale, nessun acquisto reale viene eseguito.</div>
+<div class="notice paper">🧪 MODALITÀ PAPER TRADING — simulazione virtuale, nessun acquisto reale viene eseguito.</div>
+<div id="licenseBanner" class="notice trial">Caricamento stato demo...</div>
 <p id="status">Caricamento...</p>
-
-<div class="card full">
-<h2>⚙️ Impostazioni missione utente</h2>
-<div class="form-grid">
-  <div>
-    <div class="label">Capitale iniziale</div>
-    <input id="setStart" type="number" min="1" step="1">
-  </div>
-  <div>
-    <div class="label">Obiettivo capitale</div>
-    <input id="setTarget" type="number" min="1" step="1">
-  </div>
-  <div>
-    <div class="label">Durata</div>
-    <input id="setDuration" type="number" min="1" step="1">
-  </div>
-  <div>
-    <div class="label">Unità</div>
-    <select id="setUnit">
-      <option value="hours">Ore</option>
-      <option value="days">Giorni</option>
-      <option value="weeks">Settimane</option>
-      <option value="months">Mesi</option>
-      <option value="years">Anni</option>
-    </select>
-  </div>
-  <div>
-    <button onclick="saveMission()">💾 Salva</button>
-  </div>
-</div>
-<p class="small">Queste impostazioni sono salvate nel browser dell’utente. Il bot resta in paper trading.</p>
-</div>
-
-<div class="grid">
-<div class="card"><div class="label">Capitale iniziale</div><div id="start" class="val accent">--</div></div>
-<div class="card"><div class="label">Investito ora</div><div id="invested" class="val warn">--</div></div>
-<div class="card"><div class="label">Liquidità</div><div id="balance" class="val accent">--</div></div>
-<div class="card"><div class="label">Equity</div><div id="equity" class="val">--</div></div>
-
-<div class="card"><div class="label">Valore posizioni</div><div id="openvalue" class="val accent">--</div></div>
-<div class="card"><div class="label">P/L aperto</div><div id="upl" class="val">--</div></div>
-<div class="card"><div class="label">Profitto totale</div><div id="profit" class="val">--</div></div>
-<div class="card"><div class="label">Win Rate</div><div id="winrate" class="val accent">--</div></div>
-
-<div class="card full">
-<h2>🎯 Missione capitale</h2>
-<div class="small" id="missionTitle">--</div><br>
-<div class="label">Progressione capitale</div>
-<div class="bar"><div id="capitalBar" class="fill"></div></div>
-<p id="capitalText" class="small">--</p>
-<div class="label">Tempo trascorso</div>
-<div class="bar"><div id="timeBar" class="fill-time"></div></div>
-<p id="timeText" class="small">--</p>
-<p id="planText"></p>
-</div>
-
-<div class="card wide"><h2>💼 Contabilità</h2><table id="accounting"></table></div>
-<div class="card wide"><h2>🏆 Top Setup</h2><table id="topsetup"></table></div>
-<div class="card full"><h2>📈 Posizioni aperte</h2><div id="positions"></div></div>
-<div class="card full"><h2>🔥 Top 20 mercato</h2><div id="top20"></div></div>
-</div>
+<div id="app"></div>
 </div>
 
 <script>
-const DEFAULT_MISSION = {
-  startCapital: 100,
-  targetCapital: 1000,
-  duration: 7,
-  unit: "days",
-  startTimestamp: Date.now()
-};
-
-const UNIT_MS = {
-  hours: 3600 * 1000,
-  days: 24 * 3600 * 1000,
-  weeks: 7 * 24 * 3600 * 1000,
-  months: 30 * 24 * 3600 * 1000,
-  years: 365 * 24 * 3600 * 1000
-};
-
-const UNIT_LABEL = {
-  hours: "ore",
-  days: "giorni",
-  weeks: "settimane",
-  months: "mesi",
-  years: "anni"
-};
-
-const COINS = {
-  BTC:{name:"Bitcoin",logo:"₿"}, ETH:{name:"Ethereum",logo:"◆"}, SOL:{name:"Solana",logo:"◎"},
-  BNB:{name:"BNB",logo:"🟡"}, XRP:{name:"XRP",logo:"✕"}, ADA:{name:"Cardano",logo:"₳"},
-  DOGE:{name:"Dogecoin",logo:"Ð"}, AVAX:{name:"Avalanche",logo:"🔺"}, LINK:{name:"Chainlink",logo:"🔗"},
-  DOT:{name:"Polkadot",logo:"●"}, TRX:{name:"TRON",logo:"🔻"}, LTC:{name:"Litecoin",logo:"Ł"},
-  BCH:{name:"Bitcoin Cash",logo:"₿"}, NEAR:{name:"NEAR Protocol",logo:"Ⓝ"}, UNI:{name:"Uniswap",logo:"🦄"},
-  AAVE:{name:"Aave",logo:"👻"}, SUI:{name:"Sui",logo:"💧"}, PEPE:{name:"Pepe",logo:"🐸"},
-  WIF:{name:"dogwifhat",logo:"🐶"}, BONK:{name:"Bonk",logo:"🐕"}, SHIB:{name:"Shiba Inu",logo:"🐕"},
-  FET:{name:"Artificial Superintelligence Alliance",logo:"🤖"}, INJ:{name:"Injective",logo:"⚡"},
-  ATOM:{name:"Cosmos",logo:"⚛"}, ARB:{name:"Arbitrum",logo:"🔵"}, OP:{name:"Optimism",logo:"🔴"},
-  FIL:{name:"Filecoin",logo:"📁"}, APT:{name:"Aptos",logo:"🟣"}, SEI:{name:"Sei",logo:"🌊"},
-  RENDER:{name:"Render",logo:"🎨"}, RNDR:{name:"Render",logo:"🎨"}, TON:{name:"Toncoin",logo:"💎"},
-  ETC:{name:"Ethereum Classic",logo:"◆"}, XLM:{name:"Stellar",logo:"⭐"}, HBAR:{name:"Hedera",logo:"◇"},
-  ICP:{name:"Internet Computer",logo:"∞"}, MATIC:{name:"Polygon",logo:"⬡"}, POL:{name:"Polygon",logo:"⬡"}
-};
-
-function getMission(){
-  try {
-    return JSON.parse(localStorage.getItem("phoenixAiTraderMission")) || {...DEFAULT_MISSION};
-  } catch(e) {
-    return {...DEFAULT_MISSION};
-  }
-}
-
-function saveMission(){
-  const mission = {
-    startCapital: Number(document.getElementById("setStart").value || 100),
-    targetCapital: Number(document.getElementById("setTarget").value || 1000),
-    duration: Number(document.getElementById("setDuration").value || 7),
-    unit: document.getElementById("setUnit").value || "days",
-    startTimestamp: Date.now()
-  };
-  localStorage.setItem("phoenixAiTraderMission", JSON.stringify(mission));
-  load();
-}
-
-function resetMission(){
-  localStorage.removeItem("phoenixAiTraderMission");
-  loadSettings();
-  load();
-}
-
-function loadSettings(){
-  const m = getMission();
-  document.getElementById("setStart").value = m.startCapital;
-  document.getElementById("setTarget").value = m.targetCapital;
-  document.getElementById("setDuration").value = m.duration;
-  document.getElementById("setUnit").value = m.unit;
-}
-
-function baseSymbol(symbol){
-  return String(symbol || "").replace("USDT","").replace("BUSD","").replace("FDUSD","").replace("USDC","");
-}
-
-function coinInfo(symbol){
-  const ticker = baseSymbol(symbol);
-  const item = COINS[ticker] || {name:ticker,logo:"🪙"};
-  return {ticker, name:item.name, logo:item.logo};
-}
-
-function coinHtml(symbol){
-  const c = coinInfo(symbol);
-  return `<div class="coin"><span class="logo">${c.logo}</span><div><div class="coin-name">${c.name}</div><div class="ticker">${c.ticker} · ${symbol}</div></div></div>`;
-}
-
-const money=v=>Number(v||0).toFixed(2)+" €", pct=v=>Number(v||0).toFixed(2)+"%", cls=v=>Number(v||0)>=0?"good":"bad";
-
-function set(id,val,c){
-  let e=document.getElementById(id);
-  e.textContent=val;
-  if(c)e.className="val "+c;
-}
-
-function tableRows(rows){
-  return rows.map(r=>`<tr><th>${r[0]}</th><td class="${r[2]||''}">${r[1]}</td></tr>`).join("");
-}
-
-function positions(ps){
-  if(!ps||!ps.length)return"Nessuna posizione aperta.";
-  return "<table><tr><th>Moneta</th><th>Investito</th><th>Valore</th><th>P/L €</th><th>P/L %</th><th>Score</th></tr>"
-  + ps.map(p=>`<tr>
-      <td>${coinHtml(p.symbol)}</td>
-      <td>${money(p.amount)}</td>
-      <td>${money(p.current_value)}</td>
-      <td class="${cls(p.pnl)}">${money(p.pnl)}</td>
-      <td class="${cls(p.change_percent)}">${pct(p.change_percent)}</td>
-      <td>${p.score}</td>
-    </tr>`).join("")+"</table>";
-}
-
-function top20(ts){
-  if(!ts||!ts.length)return"Nessun dato.";
-  return "<table><tr><th>#</th><th>Moneta</th><th>Score</th><th>Conf.</th><th>RSI</th><th>Vol.</th><th>1h</th></tr>"
-  + ts.map((s,i)=>`<tr>
-      <td>${i+1}</td>
-      <td>${coinHtml(s.symbol)}</td>
-      <td>${s.score}</td>
-      <td>${s.confidence}</td>
-      <td>${s.rsi??"--"}</td>
-      <td>${s.volume_ratio}x</td>
-      <td class="${cls(s.change_1h)}">${pct(s.change_1h)}</td>
-    </tr>`).join("")+"</table>";
-}
-
-function missionComputed(equity){
-  const m = getMission();
-  const totalMs = Math.max(1, m.duration * UNIT_MS[m.unit]);
-  const elapsedMs = Math.max(0, Date.now() - m.startTimestamp);
-  const timeProgress = Math.min(100, (elapsedMs / totalMs) * 100);
-
-  const range = Math.max(1, m.targetCapital - m.startCapital);
-  const capitalProgress = Math.max(0, Math.min(100, ((equity - m.startCapital) / range) * 100));
-  const expectedEquity = m.startCapital + range * (timeProgress / 100);
-  const delta = equity - expectedEquity;
-
-  return {
-    ...m,
-    totalMs,
-    elapsedMs,
-    timeProgress,
-    capitalProgress,
-    expectedEquity,
-    delta,
-    status: capitalProgress >= timeProgress ? "avanti" : "indietro"
-  };
-}
-
-async function load(){
-  let r=await fetch("/local/phoenix-ai-trader/status.json?ts="+Date.now());
-  let d=await r.json();
-  let m=missionComputed(Number(d.equity || 0));
-
-  document.getElementById("status").textContent=`🟢 Online · v${d.version} · ultimo update ${d.last_update}`;
-
-  set("start",money(m.startCapital),"accent");
-  set("invested",money(d.invested_amount),"warn");
-  set("balance",money(d.balance),"accent");
-  set("equity",money(d.equity),cls(d.total_profit));
-  set("openvalue",money(d.open_value),"accent");
-  set("upl",money(d.unrealized_pnl)+" · "+pct(d.unrealized_pnl_percent),cls(d.unrealized_pnl));
-  set("profit",money(Number(d.equity || 0) - m.startCapital)+" · "+pct(((Number(d.equity || 0) - m.startCapital) / m.startCapital) * 100),cls(Number(d.equity || 0) - m.startCapital));
-  set("winrate",pct(d.win_rate),"accent");
-
-  document.getElementById("missionTitle").textContent=`Obiettivo: ${money(m.startCapital)} → ${money(m.targetCapital)} in ${m.duration} ${UNIT_LABEL[m.unit]}`;
-  document.getElementById("capitalBar").style.width=m.capitalProgress+"%";
-  document.getElementById("timeBar").style.width=m.timeProgress+"%";
-  document.getElementById("capitalText").textContent=`Capitale: ${pct(m.capitalProgress)} · Equity attuale ${money(d.equity)}`;
-  document.getElementById("timeText").textContent=`Tempo: ${pct(m.timeProgress)} · durata scelta ${m.duration} ${UNIT_LABEL[m.unit]}`;
-
-  let planClass=Number(m.delta||0)>=0?"good":"bad";
-  document.getElementById("planText").innerHTML=`Piano teorico ora: ${money(m.expectedEquity)} · Scostamento: <span class="${planClass}">${money(m.delta)}</span> · Stato: <span class="${planClass}">${m.status}</span>`;
-
-  document.getElementById("accounting").innerHTML=tableRows([
-    ["Capitale iniziale utente",money(m.startCapital)],
-    ["Obiettivo utente",money(m.targetCapital)],
-    ["Investito ora",money(d.invested_amount),"warn"],
-    ["Liquidità",money(d.balance),"accent"],
-    ["Valore posizioni",money(d.open_value)],
-    ["P/L aperto",money(d.unrealized_pnl)+" · "+pct(d.unrealized_pnl_percent),cls(d.unrealized_pnl)],
-    ["Profitto chiuso bot",money(d.closed_profit)],
-    ["Equity",money(d.equity),cls(Number(d.equity || 0)-m.startCapital)]
-  ]);
-
-  document.getElementById("topsetup").innerHTML=tableRows([
-    ["Moneta",coinHtml(d.top_crypto)],
-    ["Score",d.top_score],
-    ["Confidenza",d.top_confidence],
-    ["Qualità",d.top_quality]
-  ]);
-
-  document.getElementById("positions").innerHTML=positions(d.positions);
-  document.getElementById("top20").innerHTML=top20(d.top20);
-}
-
-loadSettings();
-load();
-setInterval(load,30000);
+const DEFAULT_MISSION={startCapital:100,targetCapital:1000,duration:7,unit:"days",startTimestamp:Date.now()};
+const UNIT_MS={hours:3600*1000,days:24*3600*1000,weeks:7*24*3600*1000,months:30*24*3600*1000,years:365*24*3600*1000};
+const UNIT_LABEL={hours:"ore",days:"giorni",weeks:"settimane",months:"mesi",years:"anni"};
+const COINS={BTC:{name:"Bitcoin",logo:"₿"},ETH:{name:"Ethereum",logo:"◆"},SOL:{name:"Solana",logo:"◎"},BNB:{name:"BNB",logo:"🟡"},XRP:{name:"XRP",logo:"✕"},ADA:{name:"Cardano",logo:"₳"},DOGE:{name:"Dogecoin",logo:"Ð"},AVAX:{name:"Avalanche",logo:"🔺"},LINK:{name:"Chainlink",logo:"🔗"},DOT:{name:"Polkadot",logo:"●"},LTC:{name:"Litecoin",logo:"Ł"},MATIC:{name:"Polygon",logo:"⬡"},POL:{name:"Polygon",logo:"⬡"}};
+const money=v=>Number(v||0).toFixed(2)+" €",pct=v=>Number(v||0).toFixed(2)+"%",cls=v=>Number(v||0)>=0?"good":"bad";
+function getMission(){try{return JSON.parse(localStorage.getItem("phoenixAiTraderMission"))||{...DEFAULT_MISSION}}catch(e){return{...DEFAULT_MISSION}}}
+function saveMission(){const mission={startCapital:Number(document.getElementById("setStart").value||100),targetCapital:Number(document.getElementById("setTarget").value||1000),duration:Number(document.getElementById("setDuration").value||7),unit:document.getElementById("setUnit").value||"days",startTimestamp:Date.now()};localStorage.setItem("phoenixAiTraderMission",JSON.stringify(mission));load()}
+function loadSettings(){const m=getMission();["setStart","setTarget","setDuration","setUnit"].forEach(id=>{const e=document.getElementById(id);if(!e)return});if(document.getElementById("setStart")){document.getElementById("setStart").value=m.startCapital;document.getElementById("setTarget").value=m.targetCapital;document.getElementById("setDuration").value=m.duration;document.getElementById("setUnit").value=m.unit}}
+function baseSymbol(symbol){return String(symbol||"").replace("USDT","").replace("BUSD","").replace("FDUSD","").replace("USDC","")}
+function coinInfo(symbol){const ticker=baseSymbol(symbol);const item=COINS[ticker]||{name:ticker||"N/D",logo:"🪙"};return{ticker,name:item.name,logo:item.logo}}
+function coinHtml(symbol){const c=coinInfo(symbol);return`<div class="coin"><span class="logo">${c.logo}</span><div><div class="coin-name">${c.name}</div><div class="ticker">${c.ticker} · ${symbol||"N/D"}</div></div></div>`}
+function setVal(id,val,c){let e=document.getElementById(id);if(!e)return;e.textContent=val;if(c)e.className="val "+c}
+function tableRows(rows){return rows.map(r=>`<tr><th>${r[0]}</th><td class="${r[2]||''}">${r[1]}</td></tr>`).join("")}
+function positions(ps){if(!ps||!ps.length)return"Nessuna posizione aperta.";return"<table><tr><th>Moneta</th><th>Investito</th><th>Valore</th><th>P/L €</th><th>P/L %</th><th>Score</th></tr>"+ps.map(p=>`<tr><td>${coinHtml(p.symbol)}</td><td>${money(p.amount)}</td><td>${money(p.current_value)}</td><td class="${cls(p.pnl)}">${money(p.pnl)}</td><td class="${cls(p.change_percent)}">${pct(p.change_percent)}</td><td>${p.score??"--"}</td></tr>`).join("")+"</table>"}
+function top20(ts){if(!ts||!ts.length)return"Nessun dato.";return"<table><tr><th>#</th><th>Moneta</th><th>Score</th><th>Conf.</th><th>RSI</th><th>Vol.</th><th>1h</th></tr>"+ts.map((s,i)=>`<tr><td>${i+1}</td><td>${coinHtml(s.symbol)}</td><td>${s.score??"--"}</td><td>${s.confidence??"--"}</td><td>${s.rsi??"--"}</td><td>${s.volume_ratio??"--"}x</td><td class="${cls(s.change_1h)}">${pct(s.change_1h)}</td></tr>`).join("")+"</table>"}
+function missionComputed(equity){const m=getMission();const totalMs=Math.max(1,m.duration*UNIT_MS[m.unit]);const elapsedMs=Math.max(0,Date.now()-m.startTimestamp);const timeProgress=Math.min(100,(elapsedMs/totalMs)*100);const range=Math.max(1,m.targetCapital-m.startCapital);const capitalProgress=Math.max(0,Math.min(100,((equity-m.startCapital)/range)*100));const expectedEquity=m.startCapital+range*(timeProgress/100);const delta=equity-expectedEquity;return{...m,timeProgress,capitalProgress,expectedEquity,delta,status:capitalProgress>=timeProgress?"avanti":"indietro"}}
+function remainingText(seconds){if(seconds===null||seconds===undefined)return"";const s=Math.max(0,Number(seconds||0));const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);return `${h}h ${m}m`}
+function renderBanner(d){const b=document.getElementById("licenseBanner");if(d.license_status==="active"){b.className="notice active";b.textContent="✅ Phoenix AI Trader attivo · licenza valida";return}if(d.locked||d.demo_expired||d.license_status==="expired"){b.className="notice expired";b.textContent="⛔ Demo Phoenix AI Trader scaduta · inserisci una licenza per continuare";return}b.className="notice trial";b.textContent=`⏳ Demo completa attiva · tempo residuo ${remainingText(d.demo_remaining_seconds)} · scadenza ${d.demo_expires_at||"N/D"}`}
+function renderLocked(d){document.getElementById("app").innerHTML=`<div class="lock"><div class="lock-box"><h2>⛔ Demo scaduta</h2><p>Phoenix AI Trader ha completato la demo gratuita di 24 ore.</p><p>Per continuare a usare dashboard, sensori e monitoraggio P/L inserisci una licenza valida nel wizard dell'integrazione.</p><p class="small">Stato attuale: ${d.license_status||"expired"} · Email: ${d.email||"non impostata"}</p><a class="btn" href="/config/integrations">Apri integrazioni Home Assistant</a></div></div>`}
+function renderDashboard(d){document.getElementById("app").innerHTML=`
+<div class="card full"><h2>⚙️ Impostazioni missione utente</h2><div class="form-grid"><div><div class="label">Capitale iniziale</div><input id="setStart" type="number" min="1" step="1"></div><div><div class="label">Obiettivo capitale</div><input id="setTarget" type="number" min="1" step="1"></div><div><div class="label">Durata</div><input id="setDuration" type="number" min="1" step="1"></div><div><div class="label">Unità</div><select id="setUnit"><option value="hours">Ore</option><option value="days">Giorni</option><option value="weeks">Settimane</option><option value="months">Mesi</option><option value="years">Anni</option></select></div><div><button onclick="saveMission()">💾 Salva</button></div></div><p class="small">Queste impostazioni sono salvate nel browser dell’utente. Phoenix resta in paper trading.</p></div>
+<div class="grid"><div class="card"><div class="label">Capitale iniziale</div><div id="start" class="val accent">--</div></div><div class="card"><div class="label">Investito ora</div><div id="invested" class="val warn">--</div></div><div class="card"><div class="label">Liquidità</div><div id="balance" class="val accent">--</div></div><div class="card"><div class="label">Equity</div><div id="equity" class="val">--</div></div><div class="card"><div class="label">Valore posizioni</div><div id="openvalue" class="val accent">--</div></div><div class="card"><div class="label">P/L aperto</div><div id="upl" class="val">--</div></div><div class="card"><div class="label">Profitto totale</div><div id="profit" class="val">--</div></div><div class="card"><div class="label">Win Rate</div><div id="winrate" class="val accent">--</div></div><div class="card full"><h2>🎯 Missione capitale</h2><div class="small" id="missionTitle">--</div><br><div class="label">Progressione capitale</div><div class="bar"><div id="capitalBar" class="fill"></div></div><p id="capitalText" class="small">--</p><div class="label">Tempo trascorso</div><div class="bar"><div id="timeBar" class="fill-time"></div></div><p id="timeText" class="small">--</p><p id="planText"></p></div><div class="card wide"><h2>💼 Contabilità</h2><table id="accounting"></table></div><div class="card wide"><h2>🏆 Top Setup</h2><table id="topsetup"></table></div><div class="card full"><h2>📈 Posizioni aperte</h2><div id="positions"></div></div><div class="card full"><h2>🔥 Top 20 mercato</h2><div id="top20"></div></div></div>`;
+loadSettings();const m=missionComputed(Number(d.equity||0));setVal("start",money(m.startCapital),"accent");setVal("invested",money(d.invested_amount),"warn");setVal("balance",money(d.balance),"accent");setVal("equity",money(d.equity),cls(d.total_profit));setVal("openvalue",money(d.open_value),"accent");setVal("upl",money(d.unrealized_pnl)+" · "+pct(d.unrealized_pnl_percent),cls(d.unrealized_pnl));setVal("profit",money(Number(d.equity||0)-m.startCapital)+" · "+pct(((Number(d.equity||0)-m.startCapital)/m.startCapital)*100),cls(Number(d.equity||0)-m.startCapital));setVal("winrate",pct(d.win_rate),"accent");document.getElementById("missionTitle").textContent=`Obiettivo: ${money(m.startCapital)} → ${money(m.targetCapital)} in ${m.duration} ${UNIT_LABEL[m.unit]}`;document.getElementById("capitalBar").style.width=m.capitalProgress+"%";document.getElementById("timeBar").style.width=m.timeProgress+"%";document.getElementById("capitalText").textContent=`Capitale: ${pct(m.capitalProgress)} · Equity attuale ${money(d.equity)}`;document.getElementById("timeText").textContent=`Tempo: ${pct(m.timeProgress)} · durata scelta ${m.duration} ${UNIT_LABEL[m.unit]}`;let planClass=Number(m.delta||0)>=0?"good":"bad";document.getElementById("planText").innerHTML=`Piano teorico ora: ${money(m.expectedEquity)} · Scostamento: <span class="${planClass}">${money(m.delta)}</span> · Stato: <span class="${planClass}">${m.status}</span>`;document.getElementById("accounting").innerHTML=tableRows([["Capitale iniziale utente",money(m.startCapital)],["Obiettivo utente",money(m.targetCapital)],["Investito ora",money(d.invested_amount),"warn"],["Liquidità",money(d.balance),"accent"],["Valore posizioni",money(d.open_value)],["P/L aperto",money(d.unrealized_pnl)+" · "+pct(d.unrealized_pnl_percent),cls(d.unrealized_pnl)],["Profitto chiuso bot",money(d.closed_profit)],["Equity",money(d.equity),cls(Number(d.equity||0)-m.startCapital)],["Stato licenza",d.license_status||"demo"]]);document.getElementById("topsetup").innerHTML=tableRows([["Moneta",coinHtml(d.top_crypto)],["Score",d.top_score],["Confidenza",d.top_confidence],["Qualità",d.top_quality]]);document.getElementById("positions").innerHTML=positions(d.positions);document.getElementById("top20").innerHTML=top20(d.top20)}
+async function load(){try{let r=await fetch("/local/phoenix-ai-trader/status.json?ts="+Date.now());let d=await r.json();renderBanner(d);document.getElementById("status").textContent=`🟢 Online · v${d.version||"--"} · ultimo update ${d.last_update||"--"}`;if(d.locked||d.demo_expired||d.license_status==="expired"){renderLocked(d)}else{renderDashboard(d)}}catch(e){document.getElementById("status").textContent="🔴 Impossibile leggere status.json";document.getElementById("app").innerHTML=`<div class="notice expired">Controlla che la cartella dati Phoenix sia raggiungibile da Home Assistant.</div>`}}
+load();setInterval(load,30000);
 </script>
 </body>
 </html>
