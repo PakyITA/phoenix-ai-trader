@@ -7,14 +7,13 @@
 <style>
 body{margin:0;background:#020617;color:#e5e7eb;font-family:system-ui;padding:18px}
 .wrap{max-width:1100px;margin:auto}
-.card{background:#111827;border:1px solid #334155;border-radius:18px;padding:18px;margin-bottom:14px}
+.notice{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fbbf24;border-radius:14px;padding:12px;font-weight:800;margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.val{font-size:1.7rem;font-weight:800}.label{color:#94a3b8;font-size:.85rem}
-.good{color:#22c55e}.bad{color:#ef4444}.accent{color:#38bdf8}.warn{color:#f59e0b}
-.notice{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fbbf24;border-radius:14px;padding:12px;font-weight:800}
-.bar{height:20px;border-radius:99px;background:#0f172a;border:1px solid #334155;overflow:hidden}
-.fill{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0}
-table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #334155;text-align:left}th{color:#94a3b8}
+.card{background:#111827;border:1px solid #334155;border-radius:18px;padding:18px;margin-bottom:14px}
+.label{color:#94a3b8;font-size:.85rem}.val{font-size:1.7rem;font-weight:800}
+.good{color:#22c55e}.bad{color:#ef4444}.warn{color:#f59e0b}.accent{color:#38bdf8}
+.bar{height:20px;border-radius:99px;background:#0f172a;border:1px solid #334155;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:10%}
+.small{color:#94a3b8;font-size:.9rem}
 @media(max-width:800px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -22,74 +21,21 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px so
 <div class="wrap">
 <h1>🦅 Phoenix AI Trader</h1>
 <div class="notice">🧪 PAPER TRADING MODE — nessun ordine reale viene eseguito.</div>
-<p id="status">Caricamento dati...</p>
-
+<div class="card">
+  <h2>Dashboard integrata</h2>
+  <p class="small">Questa pagina è inclusa nell'integrazione HACS. I dati principali sono disponibili come sensori nativi Home Assistant.</p>
+</div>
 <div class="grid">
-<div class="card"><div class="label">Equity</div><div id="equity" class="val">--</div></div>
-<div class="card"><div class="label">Liquidità</div><div id="balance" class="val accent">--</div></div>
-<div class="card"><div class="label">Investito</div><div id="invested" class="val warn">--</div></div>
-<div class="card"><div class="label">Profitto</div><div id="profit" class="val">--</div></div>
+  <div class="card"><div class="label">Equity</div><div class="val accent">sensor.phoenix_equity</div></div>
+  <div class="card"><div class="label">Liquidità</div><div class="val accent">sensor.phoenix_liquidita</div></div>
+  <div class="card"><div class="label">Investito</div><div class="val warn">sensor.phoenix_investito</div></div>
+  <div class="card"><div class="label">Win Rate</div><div class="val accent">sensor.phoenix_win_rate</div></div>
 </div>
-
 <div class="card">
-<h2>🎯 Missione</h2>
-<p id="missionText">--</p>
-<div class="bar"><div id="missionBar" class="fill"></div></div>
-</div>
-
-<div class="card">
-<h2>📈 Posizioni aperte</h2>
-<div id="positions">--</div>
-</div>
-
-<div class="card">
-<h2>🔥 Top 20</h2>
-<div id="top20">--</div>
+  <h2>🎯 Missione</h2>
+  <p class="small">Capitale, target e durata vengono impostati dal wizard dell'integrazione.</p>
+  <div class="bar"><div class="fill"></div></div>
 </div>
 </div>
-
-<script>
-const money=v=>Number(v||0).toFixed(2)+" €";
-const pct=v=>Number(v||0).toFixed(2)+"%";
-const cls=v=>Number(v||0)>=0?"good":"bad";
-
-async function load(){
-  try{
-    const res = await fetch("/local/../phoenix-ai-trader/status.json?ts="+Date.now());
-    let d = await res.json();
-    render(d);
-  }catch(e){
-    document.getElementById("status").textContent="⚠️ Dashboard integrata pronta. In v0.2 i dati vengono esposti come sensori nativi; la web app userà il backend diretto nella prossima build.";
-  }
-}
-
-function render(d){
-  document.getElementById("status").textContent=`Online: ${d.online} · v${d.version} · ${d.last_update}`;
-  document.getElementById("equity").textContent=money(d.equity);
-  document.getElementById("balance").textContent=money(d.balance);
-  document.getElementById("invested").textContent=money(d.invested_amount);
-  document.getElementById("profit").textContent=money(d.total_profit)+" · "+pct(d.total_profit_percent);
-  document.getElementById("profit").className="val "+cls(d.total_profit);
-
-  const mission=d.mission||{};
-  const start=Number(mission.start_capital||d.start_balance||100);
-  const target=Number(mission.target_capital||1000);
-  const progress=Math.max(0,Math.min(100,((Number(d.equity||0)-start)/(target-start))*100));
-  document.getElementById("missionText").textContent=`${money(d.equity)} / ${money(target)} · ${pct(progress)}`;
-  document.getElementById("missionBar").style.width=progress+"%";
-
-  document.getElementById("positions").innerHTML = table(d.positions||[]);
-  document.getElementById("top20").innerHTML = table(d.top20||[]);
-}
-
-function table(rows){
-  if(!rows.length)return"Nessun dato disponibile.";
-  return "<table><tr>"+Object.keys(rows[0]).slice(0,6).map(k=>`<th>${k}</th>`).join("")+"</tr>"+
-  rows.map(r=>"<tr>"+Object.values(r).slice(0,6).map(v=>`<td>${v}</td>`).join("")+"</tr>").join("")+"</table>";
-}
-
-load();
-setInterval(load,30000);
-</script>
 </body>
 </html>
