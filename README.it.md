@@ -10,6 +10,7 @@
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Demo](https://img.shields.io/badge/Demo-24h-orange?style=for-the-badge)
+![Offerta Lancio](https://img.shields.io/badge/Offerta%20Lancio-9.99%E2%82%AC-orange?style=for-the-badge)
 ![Versione](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
 ![Licenza](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
@@ -48,6 +49,16 @@ Puoi creare un portafoglio crypto virtuale, monitorare guadagni e perdite, ricev
 Phoenix AI Trader include una **demo gratuita di 24 ore**.
 
 Alla scadenza della demo, dashboard principale e sensori del portafoglio vengono bloccati fino all'inserimento di una licenza valida.
+
+### 💥 Offerta lancio
+
+Per i primi **15 giorni**, la licenza personale Phoenix AI Trader è disponibile a:
+
+```text
+9,99 € invece di 19,99 €
+```
+
+Al termine dell'offerta lancio, il prezzo standard della licenza sarà **19,99 €**.
 
 Le licenze sono:
 
@@ -238,7 +249,7 @@ Tutto viene simulato localmente dentro Home Assistant.
 |---|---|
 | 🐛 **Bug** | Apri una GitHub Issue |
 | 💡 **Idee** | Usa GitHub Discussions o contatta lo sviluppatore |
-| 🔑 **Licenza** | Pagamento PayPal → licenza firmata via email |
+| 🔑 **Licenza** | Offerta lancio: **9,99 € per 15 giorni**, poi **19,99 €** · pagamento PayPal → licenza firmata via email |
 | 🇬🇧 **Supporto inglese** | Documentazione inglese disponibile in [README.md](README.md) |
 
 ---
