@@ -1,17 +1,21 @@
-# 🦅 Phoenix AI Trader for Home Assistant
+🦅 Phoenix AI Trader
 
-Phoenix AI Trader is a paper trading dashboard/integration for Home Assistant.
+AI-powered Paper Trading for Home Assistant
 
-## Version 0.1
+[Badge HACS]
+[Badge Version]
+[Badge License]
 
-This first HACS-ready version reads Phoenix `status.json` and creates native Home Assistant sensors.
+📸 Screenshot
 
-Default status file:
+✨ Features
 
-```text
-/config/www/phoenix/status.json
-```
+⚙️ Installation
 
-## Important
+📊 Dashboard
 
-Phoenix AI Trader is paper trading only. It does not execute real trades.
+🧠 AI Strategy
+
+📈 Roadmap
+
+🤝 Contributing
