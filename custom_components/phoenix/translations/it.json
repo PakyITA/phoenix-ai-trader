@@ -3,18 +3,36 @@
     "step": {
       "user": {
         "title": "Phoenix AI Trader",
-        "description": "Configura il paper trading virtuale. L'integrazione creerà automaticamente i file necessari.",
+        "description": "Configura il paper trading virtuale. Phoenix creerà automaticamente dashboard, sensori e file dati necessari.",
         "data": {
           "data_dir": "Cartella dati",
           "start_capital": "Capitale iniziale virtuale",
-          "target_capital": "Obiettivo capitale",
-          "duration_value": "Durata",
-          "duration_unit": "Unità durata"
+          "target_capital": "Capitale obiettivo",
+          "duration_value": "Durata missione",
+          "duration_unit": "Unità di durata",
+          "email": "Email licenza",
+          "activation_code": "Codice di attivazione",
+          "telegram_enabled": "Abilita notifiche Telegram",
+          "telegram_service": "Servizio Telegram Home Assistant",
+          "alert_threshold_eur": "Soglia alert in euro",
+          "alert_threshold_percent": "Soglia alert in percentuale",
+          "alert_cooldown_hours": "Ore minime tra due alert"
+        },
+        "data_description": {
+          "data_dir": "Cartella locale dove Phoenix salva i dati del portafoglio virtuale.",
+          "activation_code": "Lascia vuoto per usare la demo di 24 ore.",
+          "telegram_service": "Esempio: notify.telegram. Deve corrispondere al servizio notify configurato in Home Assistant.",
+          "alert_threshold_eur": "Phoenix invia un alert quando il guadagno o la perdita supera questa soglia.",
+          "alert_threshold_percent": "Soglia percentuale alternativa per gli alert.",
+          "alert_cooldown_hours": "Evita notifiche ripetute troppo ravvicinate."
         }
       }
     },
     "error": {
-      "cannot_create_files": "Impossibile creare i file nella cartella indicata."
+      "cannot_create_files": "Impossibile creare i file nella cartella indicata. Controlla percorso e permessi."
+    },
+    "abort": {
+      "already_configured": "Phoenix AI Trader è già configurato per questa cartella dati."
     }
   }
 }
