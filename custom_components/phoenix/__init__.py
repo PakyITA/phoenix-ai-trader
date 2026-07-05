@@ -7,12 +7,33 @@ from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, PLATFORMS
+from .const import (
+    CONF_DATA_DIR,
+    CONF_DURATION_UNIT,
+    CONF_DURATION_VALUE,
+    CONF_START_CAPITAL,
+    CONF_TARGET_CAPITAL,
+    DEFAULT_DURATION_UNIT,
+    DEFAULT_DURATION_VALUE,
+    DEFAULT_START_CAPITAL,
+    DEFAULT_TARGET_CAPITAL,
+    DOMAIN,
+    PLATFORMS,
+)
+from .storage import ensure_data_files
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    local_path = Path(__file__).parent / "www"
+
+    hass.http.register_static_path(
+        "/phoenix_ai_trader",
+        str(local_path),
+        cache_headers=False,
+    )
+
     frontend.async_register_built_in_panel(
         hass,
         component_name="custom",
@@ -22,7 +43,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         config={
             "_panel_custom": {
                 "name": "phoenix-ai-trader-panel",
-                "module_url": "/phoenix_ai_trader/phoenix-panel.js",
+                "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=021",
                 "embed_iframe": False,
                 "trust_external_script": False,
             }
@@ -30,17 +51,21 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         require_admin=False,
     )
 
-    local_path = Path(__file__).parent / "www"
-    hass.http.register_static_path(
-        "/phoenix_ai_trader",
-        str(local_path),
-        cache_headers=False,
-    )
-
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    data_dir = entry.data[CONF_DATA_DIR]
+
+    await hass.async_add_executor_job(
+        ensure_data_files,
+        data_dir,
+        float(entry.data.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)),
+        float(entry.data.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)),
+        int(entry.data.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)),
+        entry.data.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
+    )
+
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
@@ -50,8 +75,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-
     return unload_ok
