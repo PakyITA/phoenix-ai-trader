@@ -1,6 +1,6 @@
 {
-  "name": "Project Phoenix",
+  "name": "Phoenix AI Trader",
   "content_in_root": false,
   "render_readme": true,
-  "domains": ["sensor"]
+  "homeassistant": "2025.1.0"
 }
