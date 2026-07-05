@@ -10,6 +10,7 @@
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Trial](https://img.shields.io/badge/Trial-24h-orange?style=for-the-badge)
+![Launch Offer](https://img.shields.io/badge/Launch%20Offer-9.99%E2%82%AC-orange?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
@@ -48,6 +49,16 @@ Create a virtual crypto portfolio, monitor profit and loss, receive Telegram ale
 Phoenix AI Trader includes a **24-hour free trial**.
 
 After the trial expires, the main dashboard and portfolio sensors are locked until a valid license is configured.
+
+### 💥 Launch offer
+
+For the first **15 days**, the personal Phoenix AI Trader license is available for:
+
+```text
+9.99 € instead of 19.99 €
+```
+
+After the launch offer ends, the standard license price is **19.99 €**.
 
 Licenses are:
 
@@ -238,7 +249,7 @@ Everything is simulated locally inside Home Assistant.
 |---|---|
 | 🐛 **Bugs** | Open a GitHub Issue |
 | 💡 **Ideas** | Use GitHub Discussions or contact the developer |
-| 🔑 **License** | PayPal purchase → signed license by email |
+| 🔑 **License** | Launch offer: **9.99 € for 15 days**, then **19.99 €** · PayPal purchase → signed license by email |
 | 🇮🇹 **Italian support** | Italian documentation available in [README.it.md](README.it.md) |
 
 ---
