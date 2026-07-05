@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_DATA_DIR
+from .const import CONF_DATA_DIR, DOMAIN
 from .coordinator import PhoenixDataUpdateCoordinator
 
 
@@ -44,7 +44,8 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    data_dir = entry.data[CONF_DATA_DIR]
+    config = hass.data[DOMAIN][entry.entry_id]
+    data_dir = config[CONF_DATA_DIR]
     coordinator = PhoenixDataUpdateCoordinator(hass, data_dir)
     await coordinator.async_config_entry_first_refresh()
 
