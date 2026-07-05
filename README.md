@@ -1,6 +1,6 @@
-# Project Phoenix for Home Assistant
+# 🦅 Phoenix AI Trader for Home Assistant
 
-Project Phoenix is a paper trading dashboard/integration for Home Assistant.
+Phoenix AI Trader is a paper trading dashboard/integration for Home Assistant.
 
 ## Version 0.1
 
@@ -14,4 +14,4 @@ Default status file:
 
 ## Important
 
-Project Phoenix is paper trading only. It does not execute real trades.
+Phoenix AI Trader is paper trading only. It does not execute real trades.
