@@ -8,6 +8,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import (
+    CONF_ALERT_COOLDOWN_HOURS,
+    CONF_ALERT_THRESHOLD_EUR,
+    CONF_ALERT_THRESHOLD_PERCENT,
     CONF_DATA_DIR,
     CONF_DURATION_UNIT,
     CONF_DURATION_VALUE,
@@ -15,12 +18,19 @@ from .const import (
     CONF_LICENSE_KEY,
     CONF_START_CAPITAL,
     CONF_TARGET_CAPITAL,
+    CONF_TELEGRAM_ENABLED,
+    CONF_TELEGRAM_SERVICE,
     DEFAULT_ACTIVATION_CODE,
+    DEFAULT_ALERT_COOLDOWN_HOURS,
+    DEFAULT_ALERT_THRESHOLD_EUR,
+    DEFAULT_ALERT_THRESHOLD_PERCENT,
     DEFAULT_DURATION_UNIT,
     DEFAULT_DURATION_VALUE,
     DEFAULT_EMAIL,
     DEFAULT_START_CAPITAL,
     DEFAULT_TARGET_CAPITAL,
+    DEFAULT_TELEGRAM_ENABLED,
+    DEFAULT_TELEGRAM_SERVICE,
     DOMAIN,
     PLATFORMS,
 )
@@ -61,7 +71,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=030",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=031",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -87,6 +97,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
         entry.data.get(CONF_EMAIL, DEFAULT_EMAIL),
         entry.data.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE),
+        bool(entry.data.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
+        entry.data.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE),
+        float(entry.data.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)),
+        float(entry.data.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)),
+        int(entry.data.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)),
     )
 
     hass.data.setdefault(DOMAIN, {})
