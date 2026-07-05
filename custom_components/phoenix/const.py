@@ -13,9 +13,6 @@ CONF_ALERT_THRESHOLD_EUR = "alert_threshold_eur"
 CONF_ALERT_THRESHOLD_PERCENT = "alert_threshold_percent"
 CONF_ALERT_COOLDOWN_HOURS = "alert_cooldown_hours"
 
-# Cartella dedicata SOLO all'integrazione Home Assistant.
-# Il vecchio progetto Python può continuare a usare /config/phoenix-ai-trader/status.json
-# senza interferire con i sensori e il wizard dell'integrazione.
 DEFAULT_DATA_DIR = "/config/phoenix-ai-trader-ha"
 DEFAULT_START_CAPITAL = 100.0
 DEFAULT_TARGET_CAPITAL = 1000.0
@@ -34,4 +31,4 @@ SETTINGS_FILENAME = "phoenix_settings.json"
 HISTORY_FILENAME = "phoenix_history.json"
 TRADES_FILENAME = "phoenix_trades.json"
 
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "binary_sensor"]
