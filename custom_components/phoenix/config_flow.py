@@ -21,10 +21,11 @@ class PhoenixConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not os.path.exists(status_path):
                 errors["base"] = "file_not_found"
             else:
-                await self.async_set_unique_id("project_phoenix")
+                await self.async_set_unique_id(status_path)
                 self._abort_if_unique_id_configured()
+
                 return self.async_create_entry(
-                    title="Project Phoenix",
+                    title="Phoenix AI Trader",
                     data={CONF_STATUS_PATH: status_path},
                 )
 
