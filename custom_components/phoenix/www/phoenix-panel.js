@@ -9,7 +9,7 @@ class PhoenixAiTraderPanel extends HTMLElement {
         }
       </style>
 
-      <iframe src="/local/phoenix/index.html?v=${Date.now()}"></iframe>
+      <iframe src="/phoenix_ai_trader/index.html?v=${Date.now()}"></iframe>
     `;
   }
 }
