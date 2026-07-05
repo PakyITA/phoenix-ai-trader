@@ -1,15 +1,28 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .storage import read_status
+from .storage import read_settings, read_status, update_settings
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _parse_dt(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+
+
+def _now_string() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -23,4 +36,74 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.data_dir = data_dir
 
     async def _async_update_data(self) -> dict[str, Any]:
-        return await self.hass.async_add_executor_job(read_status, self.data_dir)
+        data = await self.hass.async_add_executor_job(read_status, self.data_dir)
+        await self._maybe_send_telegram_alert(data)
+        return data
+
+    async def _maybe_send_telegram_alert(self, data: dict[str, Any]) -> None:
+        if data.get("locked") or data.get("demo_expired"):
+            return
+
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        if not settings.get("telegram_enabled", False):
+            return
+
+        service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
+        if not service_name or "." not in service_name:
+            _LOGGER.warning("Phoenix Telegram service is invalid: %s", service_name)
+            return
+
+        pnl = float(data.get("total_profit") or 0.0)
+        pnl_percent = float(data.get("total_profit_percent") or 0.0)
+        threshold_eur = float(settings.get("alert_threshold_eur", 10.0) or 10.0)
+        threshold_percent = float(settings.get("alert_threshold_percent", 1.0) or 1.0)
+
+        if abs(pnl) < threshold_eur and abs(pnl_percent) < threshold_percent:
+            return
+
+        direction = "profit" if pnl >= 0 else "loss"
+        last_direction = settings.get("last_alert_direction")
+        last_alert_at = _parse_dt(settings.get("last_alert_at"))
+        cooldown_hours = int(settings.get("alert_cooldown_hours", 24) or 24)
+
+        if last_alert_at and last_direction == direction:
+            if datetime.now() - last_alert_at < timedelta(hours=cooldown_hours):
+                return
+
+        domain, service = service_name.split(".", 1)
+        emoji = "📈" if pnl >= 0 else "📉"
+        verb = "guadagnando" if pnl >= 0 else "perdendo"
+        sign = "+" if pnl >= 0 else ""
+        equity = float(data.get("equity") or 0.0)
+        balance = float(data.get("balance") or 0.0)
+        invested = float(data.get("invested_amount") or 0.0)
+
+        message = (
+            f"{emoji} Phoenix AI Trader\n\n"
+            f"Stai {verb} {sign}{pnl:.2f} €\n"
+            f"Rendimento: {sign}{pnl_percent:.2f}%\n"
+            f"Equity attuale: {equity:.2f} €\n"
+            f"Liquidità: {balance:.2f} €\n"
+            f"Investito: {invested:.2f} €"
+        )
+
+        try:
+            await self.hass.services.async_call(
+                domain,
+                service,
+                {"message": message},
+                blocking=False,
+            )
+        except Exception:
+            _LOGGER.exception("Unable to send Phoenix Telegram alert")
+            return
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {
+                "last_alert_at": _now_string(),
+                "last_alert_direction": direction,
+                "last_alert_value": pnl,
+            },
+        )
