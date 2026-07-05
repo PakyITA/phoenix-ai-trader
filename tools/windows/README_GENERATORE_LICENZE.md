@@ -2,6 +2,11 @@
 
 Questa cartella contiene gli script per generare licenze Phoenix AI Trader dal tuo PC Windows.
 
+Puoi usare due modalità:
+
+1. **Genera licenza soltanto** e la invii tu manualmente.
+2. **Genera + invia email automaticamente** al cliente.
+
 ---
 
 ## 1. Requisito
@@ -74,7 +79,47 @@ PHOENIX_PUBLIC_KEY_B64 = "CHIAVE_PUBBLICA_COPIATA_DAL_FILE"
 
 ---
 
-## 4. Generare una licenza cliente
+## 4. Configurare invio email automatico
+
+Per inviare le licenze via Gmail devi creare una **password app Gmail**.
+
+Poi copia questo file:
+
+```text
+email_config.example.json
+```
+
+e rinominalo in:
+
+```text
+email_config.json
+```
+
+Dentro `email_config.json` inserisci la password app Gmail qui:
+
+```json
+"smtp_password": "INCOLLA_QUI_PASSWORD_APP_GMAIL"
+```
+
+Il file `email_config.json` è ignorato da Git e deve restare solo sul tuo PC.
+
+Esempio configurazione:
+
+```json
+{
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": 465,
+  "smtp_user": "pasquale.play4@gmail.com",
+  "smtp_password": "PASSWORD_APP_GMAIL",
+  "sender_email": "pasquale.play4@gmail.com",
+  "sender_name": "Phoenix AI Trader",
+  "subject": "La tua licenza Phoenix AI Trader"
+}
+```
+
+---
+
+## 5. Generare una licenza cliente senza invio automatico
 
 Dopo che il cliente ha pagato con PayPal, fai doppio click su:
 
@@ -104,7 +149,31 @@ Copia quel codice e invialo al cliente.
 
 ---
 
-## 5. Email da inviare al cliente
+## 6. Generare e inviare automaticamente la licenza
+
+Dopo il pagamento PayPal, fai doppio click su:
+
+```text
+genera_e_invia_licenza_windows.bat
+```
+
+Lo script:
+
+- chiede email cliente
+- chiede nome cliente
+- genera la licenza
+- salva la licenza in `licenza_generata.txt`
+- invia automaticamente l'email al cliente
+
+Il cliente riceverà una mail con istruzioni per attivare Phoenix da:
+
+```text
+Impostazioni → Dispositivi e servizi → Phoenix AI Trader → Configura
+```
+
+---
+
+## 7. Email inviata al cliente
 
 Oggetto:
 
@@ -121,7 +190,7 @@ grazie per aver acquistato Phoenix AI Trader.
 
 Questa è la tua licenza personale:
 
-INCOLLA_QUI_LA_LICENZA
+PHX1....
 
 Per attivarla:
 
@@ -143,8 +212,14 @@ Phoenix AI Trader
 
 ---
 
-## 6. Importante
+## 8. Importante
 
 Se perdi `phoenix_private_key.pem`, non potrai più generare licenze compatibili con la chiave pubblica già inserita nell'integrazione.
 
 Fai una copia di backup sicura della chiave privata, ad esempio su una chiavetta USB conservata offline.
+
+Non pubblicare mai:
+
+- `phoenix_private_key.pem`
+- `email_config.json`
+- password app Gmail
