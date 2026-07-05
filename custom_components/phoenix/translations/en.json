@@ -29,10 +29,54 @@
       }
     },
     "error": {
-      "cannot_create_files": "Cannot create files in the selected folder. Check the path and permissions."
+      "cannot_create_files": "Cannot create files in the selected folder. Check the path and permissions.",
+      "invalid_data_dir": "Enter a valid data folder.",
+      "invalid_start_capital": "Initial capital must be greater than zero.",
+      "invalid_target_capital": "Target capital must be greater than initial capital.",
+      "invalid_duration": "Duration must be greater than zero.",
+      "invalid_telegram_service": "Telegram service must use a valid format, for example notify.telegram.",
+      "invalid_alert_threshold": "Alert threshold cannot be negative.",
+      "invalid_alert_cooldown": "Minimum time between alerts must be at least 1 hour."
     },
     "abort": {
       "already_configured": "Phoenix AI Trader is already configured for this data folder."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Phoenix AI Trader",
+        "description": "Edit virtual capital, mission, license, Telegram notifications and alert thresholds. The data folder remains the one selected during installation.",
+        "data": {
+          "start_capital": "Initial virtual capital",
+          "target_capital": "Target capital",
+          "duration_value": "Mission duration",
+          "duration_unit": "Duration unit",
+          "email": "License email",
+          "activation_code": "Activation code",
+          "telegram_enabled": "Enable Telegram notifications",
+          "telegram_service": "Home Assistant Telegram service",
+          "alert_threshold_eur": "Alert threshold in EUR",
+          "alert_threshold_percent": "Alert threshold in percent",
+          "alert_cooldown_hours": "Minimum hours between alerts"
+        },
+        "data_description": {
+          "activation_code": "Leave empty to continue using the 24-hour trial.",
+          "telegram_service": "Example: notify.telegram.",
+          "alert_threshold_eur": "Phoenix sends an alert when profit or loss exceeds this value.",
+          "alert_threshold_percent": "Alternative percentage threshold for alerts.",
+          "alert_cooldown_hours": "Prevents repeated notifications from being sent too close together."
+        }
+      }
+    },
+    "error": {
+      "cannot_create_files": "Cannot update Phoenix data files. Check the path and permissions.",
+      "invalid_start_capital": "Initial capital must be greater than zero.",
+      "invalid_target_capital": "Target capital must be greater than initial capital.",
+      "invalid_duration": "Duration must be greater than zero.",
+      "invalid_telegram_service": "Telegram service must use a valid format, for example notify.telegram.",
+      "invalid_alert_threshold": "Alert threshold cannot be negative.",
+      "invalid_alert_cooldown": "Minimum time between alerts must be at least 1 hour."
     }
   }
 }
