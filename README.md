@@ -6,48 +6,77 @@
 
 ### AI-powered Paper Trading for Home Assistant
 
-**Simulate • Learn • Improve**
+**Simulate your crypto portfolio. Track profit and loss. Learn without risking real money.**
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Trial](https://img.shields.io/badge/Trial-24h-orange?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PakyITA&repository=phoenix-ai-trader&category=integration)
+
 **🇮🇹 Italian documentation:** [README.it.md](README.it.md)
 
 ---
 
-**Phoenix AI Trader** brings an advanced **Paper Trading platform** directly into **Home Assistant**.
+**Phoenix AI Trader** brings a premium **Paper Trading experience** directly into **Home Assistant**.
 
-Test trading strategies, monitor a virtual portfolio, track performance and improve your decision-making without risking real money.
+Create a virtual crypto portfolio, monitor profit and loss, receive Telegram alerts and follow a personal capital mission — all without connecting to an exchange or risking real money.
 
 > ⚠️ **Phoenix AI Trader is designed exclusively for Paper Trading.**
 >
-> It never connects to cryptocurrency exchanges and never places real orders.
+> It never connects to Binance, Bybit, Coinbase or any other exchange and never places real orders.
 
 </div>
 
 ---
 
-## ✨ Features
+## 🚀 How Phoenix works
 
-### 🧠 AI Paper Trading
-
-Create and manage a completely virtual cryptocurrency portfolio.
-
-Perfect for:
-
-- Learning trading concepts
-- Testing new strategies
-- Improving discipline
-- Monitoring simulated performance
-- Building Home Assistant automations around portfolio events
+1. Install Phoenix from HACS.
+2. Complete the setup wizard.
+3. Use the full 24-hour free trial.
+4. After the trial, Phoenix requires a personal license.
+5. Purchase your license via PayPal.
+6. Receive your signed license by email.
+7. Paste the license in **Phoenix AI Trader → Configure**.
 
 ---
 
-### 📊 Professional Dashboard
+## 🔑 Free Trial & License
 
-Phoenix includes an integrated Home Assistant dashboard with:
+Phoenix AI Trader includes a **24-hour free trial**.
+
+After the trial expires, the main dashboard and portfolio sensors are locked until a valid license is configured.
+
+Licenses are:
+
+- linked to the buyer's PayPal email
+- personal and non-transferable
+- valid for one Home Assistant installation
+- verified locally using a signed offline license
+
+To buy a license, contact the developer after installation or use the PayPal instructions shown in the Phoenix dashboard when the trial expires.
+
+---
+
+## ✨ What makes Phoenix different
+
+| | |
+|---|---|
+| 🧠 **AI Paper Trading** | Simulate a crypto portfolio and test ideas without risking real money |
+| 📊 **Home Assistant dashboard** | Monitor equity, liquidity, open positions, profit/loss and mission progress |
+| 📱 **Telegram alerts** | Receive alerts when simulated profit or loss crosses your thresholds |
+| 🎯 **Mission Mode** | Set an initial capital, target capital and time goal |
+| 🏠 **Native entities** | Use sensors and binary sensors in dashboards, scripts and automations |
+| 🔐 **24h trial + license** | Try Phoenix first, then unlock it with a personal signed license |
+| 🧩 **No YAML required** | Full setup through the Home Assistant integration wizard |
+
+---
+
+## 📊 Dashboard Preview
+
+Phoenix includes a dedicated Home Assistant sidebar panel with:
 
 - 💰 Portfolio value
 - 📈 Equity
@@ -65,9 +94,11 @@ Phoenix includes an integrated Home Assistant dashboard with:
 
 ---
 
-### 🏠 Native Home Assistant Integration
+## 🏠 Home Assistant Entities
 
 Phoenix creates native Home Assistant entities such as:
+
+### Sensors
 
 - Equity
 - Balance
@@ -84,11 +115,18 @@ Phoenix creates native Home Assistant entities such as:
 - License status
 - Remaining trial time
 
+### Binary sensors
+
+- License active
+- Trial active
+- Phoenix locked
+- Telegram enabled
+
 These entities can be used in dashboards, automations, scripts and notifications.
 
 ---
 
-### ⚙️ Automatic Setup Wizard
+## ⚙️ Setup Wizard
 
 After installation, configure Phoenix from:
 
@@ -113,31 +151,23 @@ No manual YAML configuration is required.
 
 ---
 
-## ⏳ 24-hour Trial
+## 🧾 Changing License or Settings
 
-Phoenix AI Trader includes a complete local 24-hour trial.
+Phoenix supports the Home Assistant **Configure** button.
 
-During the trial, users can test the full dashboard and sensors. When the trial expires, Phoenix can lock the main dashboard and sensors until a valid activation code is configured.
+Go to:
 
-> Note: the current trial system is local/offline. Without an online license backend, a determined technical user may still bypass local checks.
+```text
+Settings → Devices & services → Phoenix AI Trader → Configure
+```
 
----
+From there you can update:
 
-## 🎯 Mission Mode
-
-Set your personal investment challenge.
-
-Configure:
-
-- Initial capital
-- Target capital
-- Duration
-
-Phoenix automatically tracks:
-
-- Capital progress
-- Time progress
-- Goal completion
+- license email
+- activation code
+- Telegram notifications
+- alert thresholds
+- mission settings
 
 ---
 
@@ -157,14 +187,21 @@ If your Home Assistant Telegram notification service has a different name, enter
 
 ## 📦 Installation with HACS
 
+### Method 1 — Add to Home Assistant
+
+Click the **Add to Home Assistant** badge at the top of this README.
+
+### Method 2 — Manual custom repository
+
 1. Open HACS
 2. Go to **Integrations**
 3. Add this repository as a custom repository
-4. Install **Phoenix AI Trader**
-5. Restart Home Assistant
-6. Go to **Settings → Devices & services**
-7. Add **Phoenix AI Trader**
-8. Complete the setup wizard
+4. Select category **Integration**
+5. Install **Phoenix AI Trader**
+6. Restart Home Assistant
+7. Go to **Settings → Devices & services**
+8. Add **Phoenix AI Trader**
+9. Complete the setup wizard
 
 ---
 
@@ -192,6 +229,17 @@ It:
 ✅ Never requires exchange API keys  
 
 Everything is simulated locally inside Home Assistant.
+
+---
+
+## 💬 Support
+
+| | |
+|---|---|
+| 🐛 **Bugs** | Open a GitHub Issue |
+| 💡 **Ideas** | Use GitHub Discussions or contact the developer |
+| 🔑 **License** | PayPal purchase → signed license by email |
+| 🇮🇹 **Italian support** | Italian documentation available in [README.it.md](README.it.md) |
 
 ---
 
