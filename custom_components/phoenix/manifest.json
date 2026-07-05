@@ -1,0 +1,10 @@
+{
+  "domain": "phoenix",
+  "name": "Project Phoenix",
+  "codeowners": ["@pas-destefano"],
+  "config_flow": true,
+  "documentation": "https://github.com/pas-destefano/home-assistant-phoenix",
+  "issue_tracker": "https://github.com/pas-destefano/home-assistant-phoenix/issues",
+  "iot_class": "local_polling",
+  "version": "0.1.0"
+}

@@ -1,0 +1,16 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Project Phoenix",
+        "description": "Configura il percorso del file status.json di Phoenix.",
+        "data": {
+          "status_path": "Percorso status.json"
+        }
+      }
+    },
+    "error": {
+      "file_not_found": "File status.json non trovato."
+    }
+  }
+}
