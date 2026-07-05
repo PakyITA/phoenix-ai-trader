@@ -4,7 +4,7 @@ const STATUS_URLS = [
   "/local/phoenix-ai-trader/status.json"
 ];
 
-const CONTACT_EMAIL = "pas.destefano@gmail.com";
+const CONTACT_EMAIL = "pasquale.play4@gmail.com";
 const PAYPAL_TEXT = "Richiedi link PayPal";
 
 const COINS = {
