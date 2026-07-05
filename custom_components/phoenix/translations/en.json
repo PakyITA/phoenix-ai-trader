@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Project Phoenix",
+        "title": "Phoenix",
         "description": "Configure the path to Phoenix status.json.",
         "data": {
           "status_path": "status.json path"
