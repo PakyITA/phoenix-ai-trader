@@ -1,0 +1,20 @@
+# Phoenix local license keys and generated files
+phoenix_private_key.pem
+phoenix_public_key.txt
+licenza_generata.txt
+
+# Windows license generator local files
+tools/windows/phoenix_private_key.pem
+tools/windows/phoenix_public_key.txt
+tools/windows/licenza_generata.txt
+tools/windows/email_config.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.env
