@@ -1,6 +1,6 @@
-<div align="center">
-
-<img src="docs/logo.png" width="180">
+<p align="center">
+  <img src="./docs/logo.png" alt="Phoenix AI Trader Logo" width="180">
+</p>
 
 # 🦅 Phoenix AI Trader
 
