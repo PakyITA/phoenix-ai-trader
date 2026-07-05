@@ -71,7 +71,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=040",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=041",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
