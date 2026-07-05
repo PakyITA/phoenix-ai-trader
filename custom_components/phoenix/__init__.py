@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import logging
+from pathlib import Path
+
+from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -18,8 +22,52 @@ from .const import (
 )
 from .storage import ensure_data_files
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    try:
+        local_path = Path(__file__).parent / "www"
+
+        try:
+            from homeassistant.components.http import StaticPathConfig
+
+            await hass.http.async_register_static_paths(
+                [
+                    StaticPathConfig(
+                        "/phoenix_ai_trader",
+                        str(local_path),
+                        False,
+                    )
+                ]
+            )
+        except Exception:
+            hass.http.register_static_path(
+                "/phoenix_ai_trader",
+                str(local_path),
+                cache_headers=False,
+            )
+
+        frontend.async_register_built_in_panel(
+            hass,
+            component_name="custom",
+            sidebar_title="Phoenix",
+            sidebar_icon="mdi:chart-line",
+            frontend_url_path="phoenix",
+            config={
+                "_panel_custom": {
+                    "name": "phoenix-ai-trader-panel",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=023",
+                    "embed_iframe": False,
+                    "trust_external_script": True,
+                }
+            },
+            require_admin=False,
+        )
+
+    except Exception:
+        _LOGGER.exception("Unable to register Phoenix AI Trader sidebar panel")
+
     return True
 
 
