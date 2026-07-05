@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass
 from datetime import timedelta
@@ -9,10 +10,12 @@ from typing import Any
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
 
 from .const import CONF_STATUS_PATH
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -44,8 +47,8 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, status_path: str):
         super().__init__(
             hass,
-            logger=None,
-            name="Project Phoenix",
+            _LOGGER,
+            name="Phoenix AI Trader",
             update_interval=timedelta(seconds=30),
         )
         self.status_path = status_path
@@ -70,10 +73,9 @@ async def async_setup_entry(
     coordinator = PhoenixDataUpdateCoordinator(hass, status_path)
     await coordinator.async_config_entry_first_refresh()
 
-    async_add_entities([
-        PhoenixSensor(coordinator, description)
-        for description in SENSORS
-    ])
+    async_add_entities(
+        [PhoenixSensor(coordinator, description) for description in SENSORS]
+    )
 
 
 class PhoenixSensor(CoordinatorEntity, SensorEntity):
