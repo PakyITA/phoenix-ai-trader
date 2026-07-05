@@ -3,18 +3,36 @@
     "step": {
       "user": {
         "title": "Phoenix AI Trader",
-        "description": "Configure virtual paper trading. The integration will automatically create the required files.",
+        "description": "Configure virtual paper trading. Phoenix will automatically create the required dashboard, sensors and data files.",
         "data": {
           "data_dir": "Data folder",
           "start_capital": "Initial virtual capital",
           "target_capital": "Target capital",
-          "duration_value": "Duration",
-          "duration_unit": "Duration unit"
+          "duration_value": "Mission duration",
+          "duration_unit": "Duration unit",
+          "email": "License email",
+          "activation_code": "Activation code",
+          "telegram_enabled": "Enable Telegram notifications",
+          "telegram_service": "Home Assistant Telegram service",
+          "alert_threshold_eur": "Alert threshold in EUR",
+          "alert_threshold_percent": "Alert threshold in percent",
+          "alert_cooldown_hours": "Minimum hours between alerts"
+        },
+        "data_description": {
+          "data_dir": "Local folder where Phoenix stores the virtual portfolio data.",
+          "activation_code": "Leave empty to use the 24-hour trial.",
+          "telegram_service": "Example: notify.telegram. It must match the notify service configured in Home Assistant.",
+          "alert_threshold_eur": "Phoenix sends an alert when profit or loss exceeds this value.",
+          "alert_threshold_percent": "Alternative percentage threshold for alerts.",
+          "alert_cooldown_hours": "Prevents repeated notifications from being sent too close together."
         }
       }
     },
     "error": {
-      "cannot_create_files": "Cannot create files in the selected folder."
+      "cannot_create_files": "Cannot create files in the selected folder. Check the path and permissions."
+    },
+    "abort": {
+      "already_configured": "Phoenix AI Trader is already configured for this data folder."
     }
   }
 }
