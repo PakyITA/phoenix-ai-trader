@@ -41,8 +41,10 @@ def ensure_data_files(
     os.makedirs(data_dir, exist_ok=True)
     now = now_string()
     settings_file = settings_path(data_dir)
+    status_file = status_path(data_dir)
 
     existing_settings = read_json(settings_file, default={})
+    existing_status = read_json(status_file, default={})
     existing_license = {
         "email": existing_settings.get("email", email),
         "license_key": existing_settings.get("license_key", license_key),
@@ -65,7 +67,7 @@ def ensure_data_files(
         **license_payload,
     }
 
-    status = {
+    default_status = {
         "online": False,
         "version": "0.3.0",
         "paper_trading": True,
@@ -105,8 +107,18 @@ def ensure_data_files(
         "top20": [],
     }
 
-    write_json(settings_file, {**existing_settings, **settings})
-    write_json_if_missing(status_path(data_dir), status)
+    merged_settings = {**existing_settings, **settings}
+    license_state = evaluate_license(merged_settings)
+    commercial_state = {
+        **license_state,
+        "email": merged_settings.get("email", ""),
+        "trial_mode": license_state["license_status"] == "demo",
+        "commercial_mode": True,
+        "locked": license_state["demo_expired"],
+    }
+
+    write_json(settings_file, merged_settings)
+    write_json(status_file, {**default_status, **existing_status, "version": "0.3.0", **commercial_state})
     write_json_if_missing(history_path(data_dir), [])
     write_json_if_missing(trades_path(data_dir), [])
 
