@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .storage import read_settings, read_status, update_settings
+from .storage import PHOENIX_VERSION, read_settings, read_status, update_settings
 
 _LOGGER = logging.getLogger(__name__)
+
+GITHUB_MANIFEST_URL = "https://raw.githubusercontent.com/PakyITA/phoenix-ai-trader/main/custom_components/phoenix/manifest.json"
+UPDATE_CHECK_INTERVAL_HOURS = 6
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -26,6 +31,15 @@ def _now_string() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _version_tuple(value: str | None) -> tuple[int, ...]:
+    parts = str(value or "0").split(".")
+    numbers: list[int] = []
+    for part in parts:
+        clean = "".join(ch for ch in part if ch.isdigit())
+        numbers.append(int(clean or 0))
+    return tuple(numbers)
+
+
 class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(self, hass: HomeAssistant, data_dir: str):
         super().__init__(
@@ -39,6 +53,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         data = await self.hass.async_add_executor_job(read_status, self.data_dir)
         await self._maybe_notify_demo_end(data)
+        await self._maybe_notify_update_available()
         await self._maybe_send_telegram_alert(data)
         return data
 
@@ -63,6 +78,55 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             {
                 "demo_end_notice_sent": True,
                 "demo_end_notice_at": _now_string(),
+            },
+        )
+
+    async def _maybe_notify_update_available(self) -> None:
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        last_check = _parse_dt(settings.get("update_last_check_at"))
+        if last_check and datetime.now() - last_check < timedelta(hours=UPDATE_CHECK_INTERVAL_HOURS):
+            return
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {"update_last_check_at": _now_string()},
+        )
+
+        try:
+            session = async_get_clientsession(self.hass)
+            async with session.get(GITHUB_MANIFEST_URL, timeout=10) as response:
+                if response.status != 200:
+                    return
+                payload = json.loads(await response.text())
+        except Exception:
+            _LOGGER.debug("Unable to check Phoenix update", exc_info=True)
+            return
+
+        latest_version = str(payload.get("version") or "").strip()
+        if not latest_version:
+            return
+
+        current_version = PHOENIX_VERSION
+        if _version_tuple(latest_version) <= _version_tuple(current_version):
+            return
+
+        if settings.get("update_notice_version") == latest_version:
+            return
+
+        persistent_notification.async_create(
+            self.hass,
+            f"Nuova versione disponibile: {latest_version}. Versione installata: {current_version}. Aggiorna Phoenix da HACS o da GitHub.",
+            title="Phoenix AI Trader - Aggiornamento disponibile",
+            notification_id="phoenix_update_available",
+        )
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {
+                "update_notice_version": latest_version,
+                "update_notice_at": _now_string(),
             },
         )
 
