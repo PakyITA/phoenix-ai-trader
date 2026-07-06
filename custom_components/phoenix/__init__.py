@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
     CONF_ALERT_COOLDOWN_HOURS,
@@ -35,6 +37,7 @@ from .const import (
     PLATFORMS,
 )
 from .storage import ensure_data_files
+from .update_notifier import async_check_update
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,7 +74,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=041",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=043",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -107,6 +110,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {**config, CONF_DATA_DIR: data_dir}
+
+    async def _scheduled_update_check(now=None) -> None:
+        await async_check_update(hass, data_dir)
+
+    entry.async_on_unload(
+        async_track_time_interval(hass, _scheduled_update_check, timedelta(minutes=5))
+    )
+    hass.async_create_task(async_check_update(hass, data_dir, force=True))
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
 
