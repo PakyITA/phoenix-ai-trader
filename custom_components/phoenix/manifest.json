@@ -4,7 +4,6 @@
   "codeowners": ["@PakyITA"],
   "config_flow": true,
   "documentation": "https://github.com/PakyITA/phoenix-ai-trader",
-  "issue_tracker": "https://github.com/PakyITA/phoenix-ai-trader/issues",
   "iot_class": "local_polling",
-  "version": "0.3.3"
+  "version": "0.4.0"
 }
