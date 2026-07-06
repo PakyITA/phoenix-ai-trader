@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any
 
+from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -31,14 +32,39 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hass,
             _LOGGER,
             name="Phoenix AI Trader",
-            update_interval=timedelta(seconds=30),
+            update_interval=timedelta(seconds=5),
         )
         self.data_dir = data_dir
 
     async def _async_update_data(self) -> dict[str, Any]:
         data = await self.hass.async_add_executor_job(read_status, self.data_dir)
+        await self._maybe_notify_demo_end(data)
         await self._maybe_send_telegram_alert(data)
         return data
+
+    async def _maybe_notify_demo_end(self, data: dict[str, Any]) -> None:
+        if not data.get("demo_expired") and not data.get("locked"):
+            return
+
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        if settings.get("demo_end_notice_sent"):
+            return
+
+        persistent_notification.async_create(
+            self.hass,
+            "La prova gratuita di Phoenix AI Trader e terminata. Apri Phoenix per continuare.",
+            title="Phoenix AI Trader",
+            notification_id="phoenix_demo_end",
+        )
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {
+                "demo_end_notice_sent": True,
+                "demo_end_notice_at": _now_string(),
+            },
+        )
 
     async def _maybe_send_telegram_alert(self, data: dict[str, Any]) -> None:
         if data.get("locked") or data.get("demo_expired"):
@@ -71,7 +97,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 return
 
         domain, service = service_name.split(".", 1)
-        emoji = "📈" if pnl >= 0 else "📉"
+        emoji = "P" if pnl >= 0 else "L"
         verb = "guadagnando" if pnl >= 0 else "perdendo"
         sign = "+" if pnl >= 0 else ""
         equity = float(data.get("equity") or 0.0)
@@ -80,11 +106,11 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         message = (
             f"{emoji} Phoenix AI Trader\n\n"
-            f"Stai {verb} {sign}{pnl:.2f} €\n"
+            f"Stai {verb} {sign}{pnl:.2f} EUR\n"
             f"Rendimento: {sign}{pnl_percent:.2f}%\n"
-            f"Equity attuale: {equity:.2f} €\n"
-            f"Liquidità: {balance:.2f} €\n"
-            f"Investito: {invested:.2f} €"
+            f"Equity attuale: {equity:.2f} EUR\n"
+            f"Liquidita: {balance:.2f} EUR\n"
+            f"Investito: {invested:.2f} EUR"
         )
 
         try:
