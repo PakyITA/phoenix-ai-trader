@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover - Home Assistant normally includes cryptog
     InvalidSignature = Exception
     Ed25519PublicKey = None
 
-DEMO_DURATION_SECONDS = 30
+DEMO_DURATION_SECONDS = 24 * 60 * 60
 LICENSE_STATUS_ACTIVE = "active"
 LICENSE_STATUS_DEMO = "demo"
 LICENSE_STATUS_EXPIRED = "expired"
