@@ -40,10 +40,10 @@ def save_key_pair(private_key_path: Path, public_key_path: Path) -> None:
     private_key_path.write_bytes(private_pem)
     public_key_path.write_text(base64.b64encode(public_raw).decode("ascii"), encoding="utf-8")
 
-    print("✅ Key pair generated")
+    print("OK - Key pair generated")
     print(f"Private key: {private_key_path}")
     print(f"Public key:  {public_key_path}")
-    print("\n⚠️ Keep the private key secret. Never commit it to GitHub.")
+    print("\nWARNING - Keep the private key secret. Never commit it to GitHub.")
     print("Copy the public key value into PHOENIX_PUBLIC_KEY_B64 inside custom_components/phoenix/license.py")
 
 
@@ -106,9 +106,9 @@ def main() -> None:
             expires_at=args.expires_at,
             customer_name=args.customer_name,
         )
-        print("\n✅ Phoenix AI Trader license generated\n")
+        print("\nOK - Phoenix AI Trader license generated\n")
         print(license_key)
-        print("\nSend this license to the customer and ask them to paste it into Phoenix AI Trader → Configure.")
+        print("\nSend this license to the customer and ask them to paste it into Phoenix AI Trader > Configure.")
 
 
 if __name__ == "__main__":
