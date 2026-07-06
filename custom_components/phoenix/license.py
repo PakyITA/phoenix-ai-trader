@@ -21,7 +21,7 @@ LICENSE_STATUS_INVALID = "invalid"
 # Public key used to verify licenses generated with tools/generate_license.py.
 # IMPORTANT: generate your own key pair and replace this value with your public key.
 # Never publish or commit the private key.
-PHOENIX_PUBLIC_KEY_B64 = ""
+PHOENIX_PUBLIC_KEY_B64 = "OsemsXrBTXW9bY0iNR2/1RLbjv8Is2VzzrkqGhEK8Po="
 LICENSE_PREFIX = "PHX1"
 
 
