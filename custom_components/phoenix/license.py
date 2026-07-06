@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover - Home Assistant normally includes cryptog
     InvalidSignature = Exception
     Ed25519PublicKey = None
 
-DEMO_DURATION_HOURS = 24
+DEMO_DURATION_SECONDS = 30
 LICENSE_STATUS_ACTIVE = "active"
 LICENSE_STATUS_DEMO = "demo"
 LICENSE_STATUS_EXPIRED = "expired"
@@ -110,15 +110,20 @@ def is_license_key_valid(value: str | None, email: str | None = None) -> bool:
     return True
 
 
+def _demo_expires_at(started_at: str) -> datetime:
+    started = parse_dt(started_at) or datetime.now()
+    return started + timedelta(seconds=DEMO_DURATION_SECONDS)
+
+
 def _demo_payload(started_at: str, *, license_status: str = LICENSE_STATUS_DEMO) -> dict[str, Any]:
-    expires_at = parse_dt(started_at) or datetime.now()
-    expires_at = expires_at + timedelta(hours=DEMO_DURATION_HOURS)
+    expires_at = _demo_expires_at(started_at)
 
     return {
         "license_status": license_status,
         "demo_started_at": started_at,
         "demo_expires_at": expires_at.strftime("%Y-%m-%d %H:%M:%S"),
-        "demo_duration_hours": DEMO_DURATION_HOURS,
+        "demo_duration_seconds": DEMO_DURATION_SECONDS,
+        "demo_duration_hours": round(DEMO_DURATION_SECONDS / 3600, 4),
         "licensed": False,
     }
 
@@ -145,7 +150,8 @@ def build_license_payload(
             "license_expires_at": license_payload.get("expires_at"),
             "demo_started_at": started_at,
             "demo_expires_at": None,
-            "demo_duration_hours": DEMO_DURATION_HOURS,
+            "demo_duration_seconds": DEMO_DURATION_SECONDS,
+            "demo_duration_hours": round(DEMO_DURATION_SECONDS / 3600, 4),
             "licensed": True,
         }
 
@@ -173,11 +179,11 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
             "demo_expired": False,
             "demo_remaining_seconds": None,
             "demo_expires_at": settings.get("demo_expires_at"),
+            "demo_duration_seconds": DEMO_DURATION_SECONDS,
         }
 
     started_at = settings.get("demo_started_at") or settings.get("created_at") or now_string()
-    started = parse_dt(started_at) or datetime.now()
-    expires = started + timedelta(hours=DEMO_DURATION_HOURS)
+    expires = _demo_expires_at(started_at)
     remaining = int((expires - datetime.now()).total_seconds())
     status = LICENSE_STATUS_INVALID if license_key else LICENSE_STATUS_DEMO
 
@@ -188,6 +194,7 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
             "demo_expired": True,
             "demo_remaining_seconds": 0,
             "demo_expires_at": expires.strftime("%Y-%m-%d %H:%M:%S"),
+            "demo_duration_seconds": DEMO_DURATION_SECONDS,
         }
 
     return {
@@ -196,4 +203,5 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
         "demo_expired": False,
         "demo_remaining_seconds": remaining,
         "demo_expires_at": expires.strftime("%Y-%m-%d %H:%M:%S"),
+        "demo_duration_seconds": DEMO_DURATION_SECONDS,
     }
