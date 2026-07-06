@@ -15,7 +15,7 @@ from .storage import PHOENIX_VERSION, read_settings, read_status, update_setting
 _LOGGER = logging.getLogger(__name__)
 
 GITHUB_MANIFEST_URL = "https://raw.githubusercontent.com/PakyITA/phoenix-ai-trader/main/custom_components/phoenix/manifest.json"
-UPDATE_CHECK_INTERVAL_HOURS = 6
+UPDATE_CHECK_INTERVAL_MINUTES = 5
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -84,7 +84,18 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _maybe_notify_update_available(self) -> None:
         settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
         last_check = _parse_dt(settings.get("update_last_check_at"))
-        if last_check and datetime.now() - last_check < timedelta(hours=UPDATE_CHECK_INTERVAL_HOURS):
+        if last_check and datetime.now() - last_check < timedelta(minutes=UPDATE_CHECK_INTERVAL_MINUTES):
+            return
+
+        try:
+            session = async_get_clientsession(self.hass)
+            async with session.get(GITHUB_MANIFEST_URL, timeout=10) as response:
+                if response.status != 200:
+                    _LOGGER.debug("Phoenix update check returned HTTP %s", response.status)
+                    return
+                payload = json.loads(await response.text())
+        except Exception:
+            _LOGGER.debug("Unable to check Phoenix update", exc_info=True)
             return
 
         await self.hass.async_add_executor_job(
@@ -93,22 +104,24 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             {"update_last_check_at": _now_string()},
         )
 
-        try:
-            session = async_get_clientsession(self.hass)
-            async with session.get(GITHUB_MANIFEST_URL, timeout=10) as response:
-                if response.status != 200:
-                    return
-                payload = json.loads(await response.text())
-        except Exception:
-            _LOGGER.debug("Unable to check Phoenix update", exc_info=True)
-            return
-
         latest_version = str(payload.get("version") or "").strip()
         if not latest_version:
             return
 
         current_version = PHOENIX_VERSION
-        if _version_tuple(latest_version) <= _version_tuple(current_version):
+        update_available = _version_tuple(latest_version) > _version_tuple(current_version)
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {
+                "update_latest_version": latest_version,
+                "update_current_version": current_version,
+                "update_available": update_available,
+            },
+        )
+
+        if not update_available:
             return
 
         if settings.get("update_notice_version") == latest_version:
