@@ -50,13 +50,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             from homeassistant.components.http import StaticPathConfig
 
             await hass.http.async_register_static_paths(
-                [
-                    StaticPathConfig(
-                        "/phoenix_ai_trader",
-                        str(local_path),
-                        False,
-                    )
-                ]
+                [StaticPathConfig("/phoenix_ai_trader", str(local_path), False)]
             )
         except Exception:
             hass.http.register_static_path(
@@ -67,12 +61,17 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
         frontend.async_register_built_in_panel(
             hass,
-            component_name="iframe",
+            component_name="custom",
             sidebar_title="Phoenix AI Trader",
             sidebar_icon="mdi:chart-line",
             frontend_url_path="phoenix-ai-trader",
             config={
-                "url": "/phoenix_ai_trader/index.html?v=044"
+                "_panel_custom": {
+                    "name": "phoenix-ai-trader-panel",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=045",
+                    "embed_iframe": False,
+                    "trust_external_script": True,
+                }
             },
             require_admin=False,
         )
