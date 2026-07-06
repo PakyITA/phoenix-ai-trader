@@ -21,29 +21,33 @@ def load_config(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def clean_app_password(value: str) -> str:
+    return "".join(str(value or "").split())
+
+
 def build_body(*, customer_name: str | None, license_key: str) -> str:
     greeting = f"Ciao {customer_name}," if customer_name else "Ciao,"
     return f"""{greeting}
 
 grazie per aver acquistato Phoenix AI Trader.
 
-Questa è la tua licenza personale:
+Questa e la tua licenza personale:
 
 {license_key}
 
 Per attivarla:
 
 1. Apri Home Assistant
-2. Vai su Impostazioni → Dispositivi e servizi
+2. Vai su Impostazioni - Dispositivi e servizi
 3. Apri Phoenix AI Trader
 4. Clicca Configura
 5. Inserisci la stessa email usata per PayPal
 6. Incolla il codice licenza
 7. Salva
 
-Dopo il salvataggio, Phoenix verrà sbloccato.
+Dopo il salvataggio, Phoenix verra sbloccato.
 
-La licenza è personale, non trasferibile e valida per una installazione Home Assistant.
+La licenza e personale, non trasferibile e valida per una installazione Home Assistant.
 
 Grazie,
 Phoenix AI Trader
@@ -67,6 +71,8 @@ def send_email(
     message["To"] = recipient_email
     message["Subject"] = subject
     message.set_content(body)
+
+    smtp_password = clean_app_password(smtp_password)
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
@@ -111,7 +117,7 @@ def main() -> None:
         body=body,
     )
 
-    print("✅ Licenza generata e inviata")
+    print("OK - Licenza generata e inviata")
     print(f"Cliente: {args.email}")
     print(f"Licenza salvata in: {args.save_license}")
 
