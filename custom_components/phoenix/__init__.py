@@ -67,17 +67,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
         frontend.async_register_built_in_panel(
             hass,
-            component_name="custom",
+            component_name="iframe",
             sidebar_title="Phoenix AI Trader",
             sidebar_icon="mdi:chart-line",
             frontend_url_path="phoenix-ai-trader",
             config={
-                "_panel_custom": {
-                    "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=043",
-                    "embed_iframe": False,
-                    "trust_external_script": True,
-                }
+                "url": "/phoenix_ai_trader/index.html?v=044"
             },
             require_admin=False,
         )
