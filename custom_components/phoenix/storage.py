@@ -21,6 +21,7 @@ from .license import build_license_payload, evaluate_license
 
 
 PHOENIX_VERSION = "0.4.0"
+PUBLIC_STATUS_DIR = "/config/www/phoenix-ai-trader-ha"
 
 
 def now_string() -> str:
@@ -43,12 +44,25 @@ def trades_path(data_dir: str) -> str:
     return os.path.join(data_dir, TRADES_FILENAME)
 
 
+def _mirror_public_status(path: str, payload: Any) -> None:
+    if os.path.basename(path) != STATUS_FILENAME:
+        return
+    try:
+        os.makedirs(PUBLIC_STATUS_DIR, exist_ok=True)
+        public_path = os.path.join(PUBLIC_STATUS_DIR, STATUS_FILENAME)
+        with open(public_path, "w", encoding="utf-8") as file:
+            json.dump(payload, file, indent=2, ensure_ascii=False)
+    except OSError:
+        pass
+
+
 def write_json(path: str, payload: Any) -> None:
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
     with open(path, "w", encoding="utf-8") as file:
         json.dump(payload, file, indent=2, ensure_ascii=False)
+    _mirror_public_status(path, payload)
 
 
 def read_json(path: str, default: Any) -> Any:
@@ -138,7 +152,7 @@ def ensure_data_files(
         "duration_value": duration_value,
         "duration_unit": duration_unit,
         "created_at": existing_settings.get("created_at", now),
-        "currency": "€",
+        "currency": "EUR",
         "telegram_enabled": existing_settings.get("telegram_enabled", telegram_enabled),
         "telegram_service": existing_settings.get("telegram_service", telegram_service),
         "alert_threshold_eur": float(existing_settings.get("alert_threshold_eur", alert_threshold_eur)),
@@ -224,5 +238,7 @@ def read_status(data_dir: str) -> dict[str, Any]:
     if any(status.get(key) != normalized.get(key) for key in keys):
         write_json(path, normalized)
         _append_history(data_dir, normalized)
+    else:
+        _mirror_public_status(path, normalized)
 
     return normalized
