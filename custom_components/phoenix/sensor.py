@@ -12,6 +12,13 @@ from .const import CONF_DATA_DIR, DOMAIN
 from .coordinator import PhoenixDataUpdateCoordinator
 
 
+ESSENTIAL_WHEN_LOCKED = {
+    "license_status",
+    "demo_remaining_seconds",
+    "last_update",
+}
+
+
 @dataclass(frozen=True)
 class PhoenixSensorDescription:
     key: str
@@ -68,38 +75,56 @@ class PhoenixSensor(CoordinatorEntity[PhoenixDataUpdateCoordinator], SensorEntit
         self._attr_native_unit_of_measurement = description.unit
         self._attr_icon = description.icon
 
+    def _is_locked(self) -> bool:
+        data = self.coordinator.data or {}
+        return bool(data.get("locked") or data.get("demo_expired"))
+
+    def _is_essential_when_locked(self) -> bool:
+        return self.description.key in ESSENTIAL_WHEN_LOCKED
+
+    @property
+    def available(self) -> bool:
+        if self._is_locked() and not self._is_essential_when_locked():
+            return False
+        return super().available
+
     @property
     def native_value(self):
-        if self.coordinator.data.get("locked") and self.description.key not in {
-            "license_status",
-            "demo_remaining_seconds",
-            "last_update",
-        }:
+        if self._is_locked() and not self._is_essential_when_locked():
             return None
-        return self.coordinator.data.get(self.description.key)
+        return (self.coordinator.data or {}).get(self.description.key)
 
     @property
     def extra_state_attributes(self):
+        data = self.coordinator.data or {}
+        base = {
+            "paper_trading": data.get("paper_trading", True),
+            "online": data.get("online"),
+            "version": data.get("version"),
+            "license_status": data.get("license_status"),
+            "licensed": data.get("licensed"),
+            "trial_mode": data.get("trial_mode"),
+            "locked": data.get("locked"),
+            "demo_expired": data.get("demo_expired"),
+            "demo_expires_at": data.get("demo_expires_at"),
+            "demo_remaining_seconds": data.get("demo_remaining_seconds"),
+        }
+
+        if self._is_locked():
+            base["phoenix_disabled_reason"] = "demo_expired"
+            return base
+
         return {
-            "paper_trading": self.coordinator.data.get("paper_trading", True),
-            "online": self.coordinator.data.get("online"),
-            "version": self.coordinator.data.get("version"),
-            "accounting_model": self.coordinator.data.get("accounting_model"),
-            "accounting_note": self.coordinator.data.get("accounting_note"),
-            "license_status": self.coordinator.data.get("license_status"),
-            "licensed": self.coordinator.data.get("licensed"),
-            "trial_mode": self.coordinator.data.get("trial_mode"),
-            "locked": self.coordinator.data.get("locked"),
-            "demo_expired": self.coordinator.data.get("demo_expired"),
-            "demo_expires_at": self.coordinator.data.get("demo_expires_at"),
-            "demo_remaining_seconds": self.coordinator.data.get("demo_remaining_seconds"),
-            "positions": self.coordinator.data.get("positions"),
-            "top20": self.coordinator.data.get("top20"),
-            "mission": self.coordinator.data.get("mission"),
-            "metrics": self.coordinator.data.get("metrics"),
-            "raw_accounting": self.coordinator.data.get("raw_accounting"),
-            "best_trade": self.coordinator.data.get("best_trade"),
-            "worst_trade": self.coordinator.data.get("worst_trade"),
-            "max_profit": self.coordinator.data.get("max_profit"),
-            "max_loss": self.coordinator.data.get("max_loss"),
+            **base,
+            "accounting_model": data.get("accounting_model"),
+            "accounting_note": data.get("accounting_note"),
+            "positions": data.get("positions"),
+            "top20": data.get("top20"),
+            "mission": data.get("mission"),
+            "metrics": data.get("metrics"),
+            "raw_accounting": data.get("raw_accounting"),
+            "best_trade": data.get("best_trade"),
+            "worst_trade": data.get("worst_trade"),
+            "max_profit": data.get("max_profit"),
+            "max_loss": data.get("max_loss"),
         }
