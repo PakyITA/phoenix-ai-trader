@@ -1,9 +1,0 @@
-{
-  "smtp_host": "smtp.gmail.com",
-  "smtp_port": 465,
-  "smtp_user": "pasquale.play4@gmail.com",
-  "smtp_password": "INCOLLA_QUI_PASSWORD_APP_GMAIL",
-  "sender_email": "pasquale.play4@gmail.com",
-  "sender_name": "Phoenix AI Trader",
-  "subject": "La tua licenza Phoenix AI Trader"
-}
