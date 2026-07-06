@@ -44,6 +44,11 @@ def trades_path(data_dir: str) -> str:
     return os.path.join(data_dir, TRADES_FILENAME)
 
 
+def _clean_string(value: Any, default: str = "") -> str:
+    text = str(value if value is not None else default).strip()
+    return text
+
+
 def _mirror_public_status(path: str, payload: Any) -> None:
     if os.path.basename(path) != STATUS_FILENAME:
         return
@@ -139,9 +144,13 @@ def ensure_data_files(
     existing_settings = read_json(settings_path(data_dir), default={})
     existing_status = read_json(status_path(data_dir), default={})
 
+    clean_email = _clean_string(email, existing_settings.get("email", ""))
+    clean_license_key = _clean_string(license_key, existing_settings.get("license_key", ""))
+    clean_telegram_service = _clean_string(telegram_service, existing_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE))
+
     license_payload = build_license_payload(
-        email=existing_settings.get("email", email),
-        license_key=existing_settings.get("license_key", license_key),
+        email=clean_email,
+        license_key=clean_license_key,
         demo_started_at=existing_settings.get("demo_started_at"),
     )
     settings = {
@@ -153,11 +162,13 @@ def ensure_data_files(
         "duration_unit": duration_unit,
         "created_at": existing_settings.get("created_at", now),
         "currency": "EUR",
-        "telegram_enabled": existing_settings.get("telegram_enabled", telegram_enabled),
-        "telegram_service": existing_settings.get("telegram_service", telegram_service),
-        "alert_threshold_eur": float(existing_settings.get("alert_threshold_eur", alert_threshold_eur)),
-        "alert_threshold_percent": float(existing_settings.get("alert_threshold_percent", alert_threshold_percent)),
-        "alert_cooldown_hours": int(existing_settings.get("alert_cooldown_hours", alert_cooldown_hours)),
+        "email": clean_email,
+        "license_key": clean_license_key,
+        "telegram_enabled": bool(telegram_enabled),
+        "telegram_service": clean_telegram_service,
+        "alert_threshold_eur": float(alert_threshold_eur),
+        "alert_threshold_percent": float(alert_threshold_percent),
+        "alert_cooldown_hours": int(alert_cooldown_hours),
         "last_alert_at": existing_settings.get("last_alert_at"),
         "last_alert_direction": existing_settings.get("last_alert_direction"),
         "last_alert_value": existing_settings.get("last_alert_value"),
@@ -234,6 +245,15 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "target_progress_percent",
         "max_profit",
         "max_loss",
+        "license_status",
+        "licensed",
+        "trial_mode",
+        "locked",
+        "demo_expired",
+        "demo_remaining_seconds",
+        "demo_expires_at",
+        "telegram_enabled",
+        "telegram_service",
     }
     if any(status.get(key) != normalized.get(key) for key in keys):
         write_json(path, normalized)
