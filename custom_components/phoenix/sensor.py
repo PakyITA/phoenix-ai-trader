@@ -28,6 +28,8 @@ SENSORS = [
     PhoenixSensorDescription("unrealized_pnl", "P/L Aperto", "€", "mdi:chart-line"),
     PhoenixSensorDescription("total_profit", "Profitto Totale", "€", "mdi:trending-up"),
     PhoenixSensorDescription("total_profit_percent", "Profitto Percentuale", "%", "mdi:percent"),
+    PhoenixSensorDescription("max_profit", "Massimo Guadagno", "€", "mdi:trophy"),
+    PhoenixSensorDescription("max_loss", "Massima Perdita", "€", "mdi:chart-line-variant"),
     PhoenixSensorDescription("win_rate", "Win Rate", "%", "mdi:target"),
     PhoenixSensorDescription("open_positions", "Trade Aperti", None, "mdi:format-list-bulleted"),
     PhoenixSensorDescription("closed_trades", "Trade Chiusi", None, "mdi:check-circle"),
@@ -92,4 +94,6 @@ class PhoenixSensor(CoordinatorEntity[PhoenixDataUpdateCoordinator], SensorEntit
             "mission": self.coordinator.data.get("mission"),
             "best_trade": self.coordinator.data.get("best_trade"),
             "worst_trade": self.coordinator.data.get("worst_trade"),
+            "max_profit": self.coordinator.data.get("max_profit"),
+            "max_loss": self.coordinator.data.get("max_loss"),
         }
