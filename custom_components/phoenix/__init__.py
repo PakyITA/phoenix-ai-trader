@@ -59,6 +59,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 cache_headers=False,
             )
 
+        from .api import PhoenixResetMissionView
+
+        hass.http.register_view(PhoenixResetMissionView())
+
         frontend.async_register_built_in_panel(
             hass,
             component_name="custom",
@@ -68,7 +72,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=045",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=046",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
