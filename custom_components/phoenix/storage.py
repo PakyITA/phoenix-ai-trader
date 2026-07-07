@@ -210,7 +210,26 @@ def ensure_data_files(
     }
 
     write_json(settings_path(data_dir), settings)
-    status = normalize_accounting({**default_status, **existing_status, "version": PHOENIX_VERSION, **_license_overlay(settings)})
+
+    configured_status = {
+        "start_balance": start_capital,
+        "target_capital": target_capital,
+        "mission": {
+            **(existing_status.get("mission") if isinstance(existing_status.get("mission"), dict) else {}),
+            "start_capital": start_capital,
+            "target_capital": target_capital,
+            "duration_value": duration_value,
+            "duration_unit": duration_unit,
+        },
+    }
+
+    status = normalize_accounting({
+        **default_status,
+        **existing_status,
+        **configured_status,
+        "version": PHOENIX_VERSION,
+        **_license_overlay(settings),
+    })
     write_json(status_path(data_dir), status)
     write_json_if_missing(history_path(data_dir), [])
     write_json_if_missing(trades_path(data_dir), [])
