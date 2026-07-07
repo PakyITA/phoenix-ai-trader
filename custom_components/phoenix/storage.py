@@ -49,6 +49,31 @@ def _clean_string(value: Any, default: str = "") -> str:
     return text
 
 
+def _as_float(value: Any, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def _as_int(value: Any, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
+def _mission_changed(settings: dict[str, Any], start_capital: float, target_capital: float, duration_value: int, duration_unit: str) -> bool:
+    if not settings:
+        return False
+    return (
+        _as_float(settings.get("start_capital"), start_capital) != float(start_capital)
+        or _as_float(settings.get("target_capital"), target_capital) != float(target_capital)
+        or _as_int(settings.get("duration_value"), duration_value) != int(duration_value)
+        or str(settings.get("duration_unit") or duration_unit) != str(duration_unit)
+    )
+
+
 def _mirror_public_status(path: str, payload: Any) -> None:
     if os.path.basename(path) != STATUS_FILENAME:
         return
@@ -143,6 +168,7 @@ def ensure_data_files(
     now = now_string()
     existing_settings = read_json(settings_path(data_dir), default={})
     existing_status = read_json(status_path(data_dir), default={})
+    mission_changed = _mission_changed(existing_settings, start_capital, target_capital, duration_value, duration_unit)
 
     clean_email = _clean_string(email, existing_settings.get("email", ""))
     clean_license_key = _clean_string(license_key, existing_settings.get("license_key", ""))
@@ -211,11 +237,16 @@ def ensure_data_files(
 
     write_json(settings_path(data_dir), settings)
 
+    if mission_changed:
+        base_status = default_status
+    else:
+        base_status = {**default_status, **existing_status}
+
     configured_status = {
         "start_balance": start_capital,
         "target_capital": target_capital,
         "mission": {
-            **(existing_status.get("mission") if isinstance(existing_status.get("mission"), dict) else {}),
+            **(base_status.get("mission") if isinstance(base_status.get("mission"), dict) else {}),
             "start_capital": start_capital,
             "target_capital": target_capital,
             "duration_value": duration_value,
@@ -223,9 +254,27 @@ def ensure_data_files(
         },
     }
 
+    if mission_changed:
+        configured_status.update({
+            "last_update": now,
+            "balance": start_capital,
+            "closed_profit": 0.0,
+            "max_profit": 0.0,
+            "max_loss": 0.0,
+            "closed_trades": 0,
+            "wins": 0,
+            "losses": 0,
+            "win_rate": 0.0,
+            "positions": [],
+            "top20": [],
+            "top_crypto": "N/D",
+            "top_score": 0,
+            "top_confidence": "N/D",
+            "top_quality": "N/D",
+        })
+
     status = normalize_accounting({
-        **default_status,
-        **existing_status,
+        **base_status,
         **configured_status,
         "version": PHOENIX_VERSION,
         **_license_overlay(settings),
