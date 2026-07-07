@@ -6,9 +6,10 @@ from pathlib import Path
 
 from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.event import async_track_time_interval
 
+from .actions import reset_mission
 from .const import (
     CONF_ALERT_COOLDOWN_HOURS,
     CONF_ALERT_THRESHOLD_EUR,
@@ -68,7 +69,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=048",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=049",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -129,6 +130,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {**config, CONF_DATA_DIR: data_dir}
+
+    async def _handle_reset_mission(call: ServiceCall) -> None:
+        await hass.async_add_executor_job(reset_mission, data_dir)
+
+    if not hass.services.has_service(DOMAIN, "reset_mission"):
+        hass.services.async_register(DOMAIN, "reset_mission", _handle_reset_mission)
 
     async def _scheduled_update_check(now=None) -> None:
         await async_check_update(hass, data_dir)
