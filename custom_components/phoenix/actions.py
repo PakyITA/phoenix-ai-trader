@@ -6,15 +6,25 @@ from .accounting import normalize_accounting
 from .storage import PHOENIX_VERSION, _license_overlay, now_string, read_json, settings_path, status_path, write_json
 
 
-def reset_mission(data_dir: str) -> dict[str, Any]:
+def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
     settings = read_json(settings_path(data_dir), default={})
     status = read_json(status_path(data_dir), default={})
+    current = {**settings, **(config or {})}
     now = now_string()
 
-    start_capital = float(settings.get("start_capital") or status.get("start_balance") or 1000.0)
-    target_capital = float(settings.get("target_capital") or status.get("target_capital") or start_capital)
-    duration_value = int(settings.get("duration_value") or 1)
-    duration_unit = str(settings.get("duration_unit") or "years")
+    start_capital = float(current.get("start_capital") or status.get("start_balance") or 1000.0)
+    target_capital = float(current.get("target_capital") or status.get("target_capital") or start_capital)
+    duration_value = int(current.get("duration_value") or 1)
+    duration_unit = str(current.get("duration_unit") or "years")
+
+    updated_settings = {
+        **settings,
+        "start_capital": start_capital,
+        "target_capital": target_capital,
+        "duration_value": duration_value,
+        "duration_unit": duration_unit,
+    }
+    write_json(settings_path(data_dir), updated_settings)
 
     reset_status = {
         **status,
@@ -50,6 +60,6 @@ def reset_mission(data_dir: str) -> dict[str, Any]:
         },
     }
 
-    normalized = normalize_accounting({**reset_status, **_license_overlay(settings)})
+    normalized = normalize_accounting({**reset_status, **_license_overlay(updated_settings)})
     write_json(status_path(data_dir), normalized)
     return normalized
