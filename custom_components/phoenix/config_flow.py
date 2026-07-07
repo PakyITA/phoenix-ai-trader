@@ -48,25 +48,47 @@ DURATION_UNITS = {
 }
 
 
+def _safe_defaults(defaults: dict[str, Any]) -> dict[str, Any]:
+    duration_unit = defaults.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)
+    if duration_unit not in DURATION_UNITS:
+        duration_unit = DEFAULT_DURATION_UNIT
+
+    return {
+        CONF_DATA_DIR: str(defaults.get(CONF_DATA_DIR, DEFAULT_DATA_DIR) or DEFAULT_DATA_DIR),
+        CONF_START_CAPITAL: defaults.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL) or DEFAULT_START_CAPITAL,
+        CONF_TARGET_CAPITAL: defaults.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL) or DEFAULT_TARGET_CAPITAL,
+        CONF_DURATION_VALUE: defaults.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE) or DEFAULT_DURATION_VALUE,
+        CONF_DURATION_UNIT: duration_unit,
+        CONF_EMAIL: str(defaults.get(CONF_EMAIL, DEFAULT_EMAIL) or ""),
+        CONF_LICENSE_KEY: str(defaults.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE) or ""),
+        CONF_TELEGRAM_ENABLED: bool(defaults.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
+        CONF_TELEGRAM_SERVICE: str(defaults.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE) or DEFAULT_TELEGRAM_SERVICE),
+        CONF_ALERT_THRESHOLD_EUR: defaults.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR) or DEFAULT_ALERT_THRESHOLD_EUR,
+        CONF_ALERT_THRESHOLD_PERCENT: defaults.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT) or DEFAULT_ALERT_THRESHOLD_PERCENT,
+        CONF_ALERT_COOLDOWN_HOURS: defaults.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS) or DEFAULT_ALERT_COOLDOWN_HOURS,
+    }
+
+
 def _build_schema(defaults: dict[str, Any], *, include_data_dir: bool = True) -> vol.Schema:
+    safe = _safe_defaults(defaults)
     fields: dict[Any, Any] = {}
 
     if include_data_dir:
-        fields[vol.Required(CONF_DATA_DIR, default=defaults.get(CONF_DATA_DIR, DEFAULT_DATA_DIR))] = str
+        fields[vol.Required(CONF_DATA_DIR, default=safe[CONF_DATA_DIR])] = str
 
     fields.update(
         {
-            vol.Required(CONF_START_CAPITAL, default=defaults.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)): vol.Coerce(float),
-            vol.Required(CONF_TARGET_CAPITAL, default=defaults.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)): vol.Coerce(float),
-            vol.Required(CONF_DURATION_VALUE, default=defaults.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)): vol.Coerce(int),
-            vol.Required(CONF_DURATION_UNIT, default=defaults.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)): vol.In(DURATION_UNITS),
-            vol.Optional(CONF_EMAIL, default=defaults.get(CONF_EMAIL, DEFAULT_EMAIL)): str,
-            vol.Optional(CONF_LICENSE_KEY, default=defaults.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)): str,
-            vol.Optional(CONF_TELEGRAM_ENABLED, default=defaults.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)): bool,
-            vol.Optional(CONF_TELEGRAM_SERVICE, default=defaults.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE)): str,
-            vol.Optional(CONF_ALERT_THRESHOLD_EUR, default=defaults.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)): vol.Coerce(float),
-            vol.Optional(CONF_ALERT_THRESHOLD_PERCENT, default=defaults.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)): vol.Coerce(float),
-            vol.Optional(CONF_ALERT_COOLDOWN_HOURS, default=defaults.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)): vol.Coerce(int),
+            vol.Required(CONF_START_CAPITAL, default=safe[CONF_START_CAPITAL]): vol.Coerce(float),
+            vol.Required(CONF_TARGET_CAPITAL, default=safe[CONF_TARGET_CAPITAL]): vol.Coerce(float),
+            vol.Required(CONF_DURATION_VALUE, default=safe[CONF_DURATION_VALUE]): vol.Coerce(int),
+            vol.Required(CONF_DURATION_UNIT, default=safe[CONF_DURATION_UNIT]): vol.In(DURATION_UNITS),
+            vol.Optional(CONF_EMAIL, default=safe[CONF_EMAIL]): str,
+            vol.Optional(CONF_LICENSE_KEY, default=safe[CONF_LICENSE_KEY]): str,
+            vol.Optional(CONF_TELEGRAM_ENABLED, default=safe[CONF_TELEGRAM_ENABLED]): bool,
+            vol.Optional(CONF_TELEGRAM_SERVICE, default=safe[CONF_TELEGRAM_SERVICE]): str,
+            vol.Optional(CONF_ALERT_THRESHOLD_EUR, default=safe[CONF_ALERT_THRESHOLD_EUR]): vol.Coerce(float),
+            vol.Optional(CONF_ALERT_THRESHOLD_PERCENT, default=safe[CONF_ALERT_THRESHOLD_PERCENT]): vol.Coerce(float),
+            vol.Optional(CONF_ALERT_COOLDOWN_HOURS, default=safe[CONF_ALERT_COOLDOWN_HOURS]): vol.Coerce(int),
         }
     )
 
@@ -74,16 +96,19 @@ def _build_schema(defaults: dict[str, Any], *, include_data_dir: bool = True) ->
 
 
 def _normalize_input(user_input: dict[str, Any], *, data_dir: str | None = None) -> dict[str, Any]:
-    normalized = dict(user_input)
+    normalized = dict(user_input or {})
 
     if data_dir is not None:
         normalized[CONF_DATA_DIR] = data_dir
     else:
-        normalized[CONF_DATA_DIR] = str(normalized[CONF_DATA_DIR]).strip()
+        normalized[CONF_DATA_DIR] = str(normalized.get(CONF_DATA_DIR, DEFAULT_DATA_DIR)).strip()
 
-    normalized[CONF_START_CAPITAL] = float(normalized[CONF_START_CAPITAL])
-    normalized[CONF_TARGET_CAPITAL] = float(normalized[CONF_TARGET_CAPITAL])
-    normalized[CONF_DURATION_VALUE] = int(normalized[CONF_DURATION_VALUE])
+    normalized[CONF_START_CAPITAL] = float(normalized.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL))
+    normalized[CONF_TARGET_CAPITAL] = float(normalized.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL))
+    normalized[CONF_DURATION_VALUE] = int(normalized.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE))
+    normalized[CONF_DURATION_UNIT] = normalized.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)
+    if normalized[CONF_DURATION_UNIT] not in DURATION_UNITS:
+        normalized[CONF_DURATION_UNIT] = DEFAULT_DURATION_UNIT
     normalized[CONF_EMAIL] = str(normalized.get(CONF_EMAIL, DEFAULT_EMAIL)).strip()
     normalized[CONF_LICENSE_KEY] = str(normalized.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)).strip()
     normalized[CONF_TELEGRAM_ENABLED] = bool(normalized.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED))
@@ -98,28 +123,28 @@ def _normalize_input(user_input: dict[str, Any], *, data_dir: str | None = None)
 def _validate_input(data: dict[str, Any]) -> dict[str, str]:
     errors: dict[str, str] = {}
 
-    if not data[CONF_DATA_DIR]:
+    if not data.get(CONF_DATA_DIR):
         errors[CONF_DATA_DIR] = "invalid_data_dir"
 
-    if data[CONF_START_CAPITAL] <= 0:
+    if data.get(CONF_START_CAPITAL, 0) <= 0:
         errors[CONF_START_CAPITAL] = "invalid_start_capital"
 
-    if data[CONF_TARGET_CAPITAL] <= data[CONF_START_CAPITAL]:
+    if data.get(CONF_TARGET_CAPITAL, 0) <= data.get(CONF_START_CAPITAL, 0):
         errors[CONF_TARGET_CAPITAL] = "invalid_target_capital"
 
-    if data[CONF_DURATION_VALUE] <= 0:
+    if data.get(CONF_DURATION_VALUE, 0) <= 0:
         errors[CONF_DURATION_VALUE] = "invalid_duration"
 
-    if data[CONF_TELEGRAM_ENABLED] and "." not in data[CONF_TELEGRAM_SERVICE]:
+    if data.get(CONF_TELEGRAM_ENABLED) and "." not in data.get(CONF_TELEGRAM_SERVICE, ""):
         errors[CONF_TELEGRAM_SERVICE] = "invalid_telegram_service"
 
-    if data[CONF_ALERT_THRESHOLD_EUR] < 0:
+    if data.get(CONF_ALERT_THRESHOLD_EUR, 0) < 0:
         errors[CONF_ALERT_THRESHOLD_EUR] = "invalid_alert_threshold"
 
-    if data[CONF_ALERT_THRESHOLD_PERCENT] < 0:
+    if data.get(CONF_ALERT_THRESHOLD_PERCENT, 0) < 0:
         errors[CONF_ALERT_THRESHOLD_PERCENT] = "invalid_alert_threshold"
 
-    if data[CONF_ALERT_COOLDOWN_HOURS] < 1:
+    if data.get(CONF_ALERT_COOLDOWN_HOURS, 0) < 1:
         errors[CONF_ALERT_COOLDOWN_HOURS] = "invalid_alert_cooldown"
 
     return errors
@@ -144,7 +169,7 @@ async def _ensure_files(hass, data: dict[str, Any]) -> None:
 
 
 class PhoenixConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 5
+    VERSION = 6
 
     @staticmethod
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
@@ -181,8 +206,8 @@ class PhoenixOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None) -> FlowResult:
         errors: dict[str, str] = {}
-        data_dir = self.config_entry.data[CONF_DATA_DIR]
-        defaults = {**self.config_entry.data, **self.config_entry.options}
+        data_dir = self.config_entry.data.get(CONF_DATA_DIR, DEFAULT_DATA_DIR)
+        defaults = _safe_defaults({**self.config_entry.data, **self.config_entry.options})
 
         if user_input is not None:
             data = _normalize_input(user_input, data_dir=data_dir)
