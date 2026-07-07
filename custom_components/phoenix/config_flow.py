@@ -169,7 +169,7 @@ async def _ensure_files(hass, data: dict[str, Any]) -> None:
 
 
 class PhoenixConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 6
+    VERSION = 7
 
     @staticmethod
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
@@ -202,12 +202,16 @@ class PhoenixConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class PhoenixOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
+        self._config_entry = config_entry
+
+    def _entry(self) -> config_entries.ConfigEntry:
+        return getattr(self, "config_entry", None) or self._config_entry
 
     async def async_step_init(self, user_input=None) -> FlowResult:
         errors: dict[str, str] = {}
-        data_dir = self.config_entry.data.get(CONF_DATA_DIR, DEFAULT_DATA_DIR)
-        defaults = _safe_defaults({**self.config_entry.data, **self.config_entry.options})
+        entry = self._entry()
+        data_dir = entry.data.get(CONF_DATA_DIR, DEFAULT_DATA_DIR)
+        defaults = _safe_defaults({**entry.data, **entry.options})
 
         if user_input is not None:
             data = _normalize_input(user_input, data_dir=data_dir)
