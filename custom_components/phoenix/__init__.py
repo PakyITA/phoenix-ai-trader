@@ -69,7 +69,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=049",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=050",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -132,7 +132,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {**config, CONF_DATA_DIR: data_dir}
 
     async def _handle_reset_mission(call: ServiceCall) -> None:
-        await hass.async_add_executor_job(reset_mission, data_dir)
+        runtime = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
+        current_config = {**entry.data, **entry.options, **runtime}
+        await hass.async_add_executor_job(reset_mission, data_dir, current_config)
 
     if not hass.services.has_service(DOMAIN, "reset_mission"):
         hass.services.async_register(DOMAIN, "reset_mission", _handle_reset_mission)
