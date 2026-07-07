@@ -16,7 +16,7 @@ async function phoenixResetMission() {
   if (button) button.disabled = true;
 
   try {
-    const response = await fetch("/api/phoenix/reset_mission", {
+    const response = await fetch("/api/services/phoenix/reset_mission", {
       method: "POST",
       credentials: "same-origin",
       headers: {
@@ -37,7 +37,7 @@ async function phoenixResetMission() {
       window.location.reload();
     }
   } catch (error) {
-    alert("Reset non riuscito. Riprova dopo il riavvio di Home Assistant o usa Configura dall'integrazione Phoenix.");
+    alert("Reset non riuscito. Riavvia Home Assistant e riprova, oppure esegui il servizio phoenix.reset_mission da Strumenti per sviluppatori.");
   } finally {
     if (button) button.disabled = false;
   }
