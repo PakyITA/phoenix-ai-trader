@@ -68,7 +68,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=047",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=048",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -79,6 +79,31 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     except Exception:
         _LOGGER.exception("Unable to register Phoenix AI Trader sidebar panel")
 
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    data = dict(entry.data or {})
+    options = dict(entry.options or {})
+
+    data.setdefault(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)
+    data.setdefault(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)
+    data.setdefault(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)
+    data.setdefault(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)
+    data.setdefault(CONF_EMAIL, DEFAULT_EMAIL)
+    data.setdefault(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)
+    data.setdefault(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)
+    data.setdefault(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE)
+    data.setdefault(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)
+    data.setdefault(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)
+    data.setdefault(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)
+
+    hass.config_entries.async_update_entry(
+        entry,
+        data=data,
+        options=options,
+        version=8,
+    )
     return True
 
 
