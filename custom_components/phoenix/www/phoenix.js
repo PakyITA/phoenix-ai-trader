@@ -30,6 +30,18 @@ function remainingText(seconds) {
   return `${hours}h ${minutes}m`;
 }
 
+function licenseExpiryText(data) {
+  return data.license_expires_at || data.license_expiry || data.demo_expires_at || "N/D";
+}
+
+function licenseEmailText(data) {
+  return data.email || "non impostata";
+}
+
+function insertLicenseButton(label = "🔑 Inserisci licenza") {
+  return `<button class="btn" type="button" onclick="window.phoenixOpenSettings ? window.phoenixOpenSettings() : document.getElementById('phoenixOpenSettingsBtn')?.click()">${label}</button>`;
+}
+
 function baseSymbol(symbol) {
   return String(symbol || "").replace("USDT", "").replace("BUSD", "").replace("FDUSD", "").replace("USDC", "");
 }
@@ -69,21 +81,35 @@ function renderLocked(data) {
   app.innerHTML = `
     <section class="locked">
       <div class="locked-box">
-        <h2>🚀 Continua con Phoenix AI Trader</h2>
-        <p>Phoenix ha completato la demo gratuita di 24 ore.</p>
-        <div class="license-badge">🔑 Offerta lancio 9,99 € · poi 19,99 €</div>
-        <p>Per continuare a usare dashboard, sensori, monitoraggio P/L e alert Telegram, acquista una licenza personale. Dopo il pagamento riceverai un codice licenza firmato da inserire in Home Assistant.</p>
+        <h2>⛔ Demo gratuita terminata</h2>
+        <p><b>La prova gratuita di 24 ore è terminata.</b> Per continuare a usare Phoenix AI Trader devi acquistare e inserire una licenza personale annuale.</p>
+        <div class="license-badge">🔑 Offerta lancio 9,99 € · poi 19,99 €/anno</div>
+        <p>Con la licenza attiva sblocchi dashboard, sensori, Top 20 mercato, monitoraggio P/L e alert Telegram.</p>
         <div class="steps">
-          <div class="step"><b>1. Paga con PayPal</b><br><span class="small">Offerta lancio: 9,99 € per 15 giorni.</span></div>
-          <div class="step"><b>2. Invia conferma</b><br><span class="small">Usa l'email PayPal/Home Assistant per ricevere il codice.</span></div>
-          <div class="step"><b>3. Attiva Phoenix</b><br><span class="small">Vai su Phoenix AI Trader → Configura e incolla il codice.</span></div>
+          <div class="step"><b>1. Acquista</b><br><span class="small">Paga con PayPal usando l'offerta lancio.</span></div>
+          <div class="step"><b>2. Ricevi codice</b><br><span class="small">La licenza firmata viene inviata via email.</span></div>
+          <div class="step"><b>3. Inserisci licenza</b><br><span class="small">Apri Impostazioni Phoenix e incolla il codice.</span></div>
         </div>
-        <p class="small">Stato attuale: ${data.license_status || "expired"} · Email configurata: ${data.email || "non impostata"}</p>
+        <p class="small">Stato attuale: ${data.license_status || "expired"} · Email configurata: ${licenseEmailText(data)} · Scadenza demo: ${data.demo_expires_at || "N/D"}</p>
         <a class="btn btn-pay" href="${PAYPAL_LINK}" target="_blank" rel="noopener">💳 ${PAYPAL_TEXT}</a>
+        ${insertLicenseButton()}
         <a class="btn" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">📩 Ho pagato, richiedo licenza</a>
-        <a class="btn" href="/config/integrations">⚙️ Apri integrazioni</a>
+        <p class="small">⚠️ Phoenix è solo Paper Trading e non fornisce consulenza finanziaria. Ogni decisione economica resta sotto responsabilità dell'utente.</p>
       </div>
     </section>`;
+}
+
+function renderLicensePanel(data) {
+  const active = data.license_status === "active";
+  const status = active ? "Attiva" : (data.demo_expired || data.locked ? "Demo scaduta" : "Demo attiva");
+  const css = active ? "good" : (data.demo_expired || data.locked ? "bad" : "warn");
+  return `<div class="card wide"><h2>🔐 Licenza</h2>${rows([
+    ["Stato", status, css],
+    ["Email associata", licenseEmailText(data)],
+    [active ? "Scadenza licenza" : "Scadenza demo", licenseExpiryText(data)],
+    ["Piano", data.license_plan || (active ? "Annual" : "Trial")],
+    ["Azione", insertLicenseButton(active ? "🔁 Aggiorna licenza" : "🔑 Inserisci licenza")]
+  ])}</div>`;
 }
 
 function renderDashboard(data) {
@@ -98,7 +124,7 @@ function renderDashboard(data) {
       ${card("Profitto totale", `${money(data.total_profit)} · ${pct(data.total_profit_percent)}`, cls(profit))}
       ${card("Win rate", pct(data.win_rate), "accent")}
       ${card("Trade aperti", data.open_positions || 0, "accent")}
-      ${card("Demo residua", remainingText(data.demo_remaining_seconds) || "Licenza attiva", data.license_status === "active" ? "good" : "warn")}
+      ${card("Demo/Licenza", data.license_status === "active" ? "Licenza attiva" : remainingText(data.demo_remaining_seconds), data.license_status === "active" ? "good" : "warn")}
       <div class="card wide"><h2>💼 Contabilità</h2>${rows([
         ["Valore posizioni", money(data.open_value)],
         ["Profitto chiuso", money(data.closed_profit)],
@@ -106,6 +132,7 @@ function renderDashboard(data) {
         ["Stato licenza", data.license_status || "demo"],
         ["Telegram", data.telegram_enabled ? "Attivo" : "Non attivo", data.telegram_enabled ? "good" : "warn"]
       ])}</div>
+      ${renderLicensePanel(data)}
       <div class="card wide"><h2>🏆 Top setup</h2>${rows([
         ["Moneta", coinHtml(data.top_crypto)],
         ["Score", data.top_score ?? "--"],
