@@ -18,6 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 GITHUB_MANIFEST_URL = "https://raw.githubusercontent.com/PakyITA/phoenix-ai-trader/main/custom_components/phoenix/manifest.json"
 UPDATE_CHECK_INTERVAL_MINUTES = 5
 SCAN_INTERVAL_SECONDS = 60
+TOP_SETUP_ALERT_SCORE = 80
+TOP_SETUP_ALERT_COOLDOWN_HOURS = 3
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -59,6 +61,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             data = await self.hass.async_add_executor_job(read_status, self.data_dir)
         await self._maybe_notify_demo_end(data)
         await self._maybe_notify_update_available()
+        await self._maybe_send_top_setup_alert(data)
         await self._maybe_send_telegram_alert(data)
         return data
 
@@ -75,6 +78,94 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         status = await self.hass.async_add_executor_job(read_json, status_path(self.data_dir), {})
         status.update(scan_payload)
         await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), status)
+
+    async def _telegram_config(self) -> tuple[dict[str, Any], str, str, str] | None:
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        if not settings.get("telegram_enabled", False):
+            return None
+
+        service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
+        telegram_chat_id = str(settings.get("telegram_chat_id", "")).strip()
+        if not service_name or "." not in service_name:
+            _LOGGER.warning("Phoenix Telegram service is invalid: %s", service_name)
+            return None
+
+        domain, service = service_name.split(".", 1)
+        return settings, domain, service, telegram_chat_id
+
+    async def _send_telegram_message(self, message: str, *, blocking: bool = False) -> bool:
+        config = await self._telegram_config()
+        if config is None:
+            return False
+
+        _settings, domain, service, telegram_chat_id = config
+        service_data = {"message": message}
+        if telegram_chat_id:
+            service_data["target"] = telegram_chat_id
+
+        try:
+            await self.hass.services.async_call(
+                domain,
+                service,
+                service_data,
+                blocking=blocking,
+            )
+        except Exception:
+            _LOGGER.exception("Unable to send Phoenix Telegram message")
+            return False
+
+        return True
+
+    async def _maybe_send_top_setup_alert(self, data: dict[str, Any]) -> None:
+        if data.get("locked") or data.get("demo_expired"):
+            return
+
+        top20 = data.get("top20") if isinstance(data.get("top20"), list) else []
+        top = top20[0] if top20 else {}
+        symbol = str(top.get("symbol") or data.get("top_crypto") or "").strip()
+        pair = str(top.get("pair") or data.get("top_pair") or symbol or "N/D")
+        score = int(top.get("score") or data.get("top_score") or 0)
+        confidence = str(top.get("confidence") or data.get("top_confidence") or "N/D")
+        quality = str(top.get("quality") or data.get("top_quality") or "N/D")
+        risk = str(top.get("market_risk") or data.get("market_risk") or "N/D")
+
+        if not symbol or symbol == "N/D" or score < TOP_SETUP_ALERT_SCORE:
+            return
+
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        last_symbol = str(settings.get("last_top_setup_alert_symbol", ""))
+        last_score = int(settings.get("last_top_setup_alert_score", 0) or 0)
+        last_at = _parse_dt(settings.get("last_top_setup_alert_at"))
+
+        same_or_weaker_setup = last_symbol == symbol and score <= last_score
+        in_cooldown = bool(last_at and datetime.now() - last_at < timedelta(hours=TOP_SETUP_ALERT_COOLDOWN_HOURS))
+        if same_or_weaker_setup and in_cooldown:
+            return
+
+        message = (
+            "🔥 Phoenix AI Trader\n\n"
+            "Nuovo setup interessante trovato\n"
+            f"Coin: {pair}\n"
+            f"Score: {score}/100\n"
+            f"Confidenza: {confidence}\n"
+            f"Qualità: {quality}\n"
+            f"Rischio mercato: {risk}\n\n"
+            "Modalità Paper Trading: nessun ordine reale eseguito."
+        )
+
+        sent = await self._send_telegram_message(message, blocking=False)
+        if not sent:
+            return
+
+        await self.hass.async_add_executor_job(
+            update_settings,
+            self.data_dir,
+            {
+                "last_top_setup_alert_at": _now_string(),
+                "last_top_setup_alert_symbol": symbol,
+                "last_top_setup_alert_score": score,
+            },
+        )
 
     async def _maybe_notify_demo_end(self, data: dict[str, Any]) -> None:
         if not data.get("demo_expired") and not data.get("locked"):
@@ -166,15 +257,10 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if data.get("locked") or data.get("demo_expired"):
             return
 
-        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
-        if not settings.get("telegram_enabled", False):
+        config = await self._telegram_config()
+        if config is None:
             return
-
-        service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
-        telegram_chat_id = str(settings.get("telegram_chat_id", "")).strip()
-        if not service_name or "." not in service_name:
-            _LOGGER.warning("Phoenix Telegram service is invalid: %s", service_name)
-            return
+        settings, _domain, _service, _telegram_chat_id = config
 
         pnl = float(data.get("total_profit") or 0.0)
         pnl_percent = float(data.get("total_profit_percent") or 0.0)
@@ -193,7 +279,6 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if datetime.now() - last_alert_at < timedelta(hours=cooldown_hours):
                 return
 
-        domain, service = service_name.split(".", 1)
         emoji = "P" if pnl >= 0 else "L"
         verb = "guadagnando" if pnl >= 0 else "perdendo"
         sign = "+" if pnl >= 0 else ""
@@ -210,19 +295,8 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Investito: {invested:.2f} EUR"
         )
 
-        service_data = {"message": message}
-        if telegram_chat_id:
-            service_data["target"] = telegram_chat_id
-
-        try:
-            await self.hass.services.async_call(
-                domain,
-                service,
-                service_data,
-                blocking=False,
-            )
-        except Exception:
-            _LOGGER.exception("Unable to send Phoenix Telegram alert")
+        sent = await self._send_telegram_message(message, blocking=False)
+        if not sent:
             return
 
         await self.hass.async_add_executor_job(
