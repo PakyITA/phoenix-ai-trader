@@ -85,13 +85,17 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
         data["paper_trader_status"] = "disattivato"
         return data, None
 
+    positions = data.get("positions") if isinstance(data.get("positions"), list) else []
+    invested_amount = _num(data.get("invested_amount"), 0.0)
+    open_value = _num(data.get("open_value"), 0.0)
+    has_real_open_position = bool(positions) or invested_amount > 0 or open_value > 0
+
     cooldown_minutes = int(settings.get("auto_trade_cooldown_minutes", AUTO_TRADE_COOLDOWN_MINUTES) or AUTO_TRADE_COOLDOWN_MINUTES)
     last_trade_at = _parse_dt(data.get("last_auto_trade_at") or settings.get("last_auto_trade_at"))
-    if last_trade_at and datetime.now() - last_trade_at < timedelta(minutes=cooldown_minutes):
+    if has_real_open_position and last_trade_at and datetime.now() - last_trade_at < timedelta(minutes=cooldown_minutes):
         data["paper_trader_status"] = "cooldown"
         return data, None
 
-    positions = data.get("positions") if isinstance(data.get("positions"), list) else []
     if len(positions) >= int(settings.get("max_open_positions", MAX_OPEN_POSITIONS) or MAX_OPEN_POSITIONS):
         data["paper_trader_status"] = "limite posizioni raggiunto"
         return data, None
@@ -170,6 +174,7 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
     data["auto_trade_allocation_percent"] = allocation_percent
     data["auto_trade_min_score"] = AUTO_TRADE_MIN_SCORE
     data["auto_trade_cooldown_minutes"] = cooldown_minutes
+    data["stale_auto_trade_marker_recovered"] = bool(last_trade_at and not has_real_open_position)
 
     event = {
         "time": position["opened_at"],
