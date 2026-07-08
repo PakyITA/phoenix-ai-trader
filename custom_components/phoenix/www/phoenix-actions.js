@@ -86,6 +86,7 @@ async function phoenixOpenSettings() {
     phoenixSetValue("phoenixSetActivationCode", "");
     phoenixSetValue("phoenixSetTelegramEnabled", String(Boolean(d.telegram_enabled)));
     phoenixSetValue("phoenixSetTelegramService", d.telegram_service ?? "notify.telegram");
+    phoenixSetValue("phoenixSetTelegramChatId", d.telegram_chat_id ?? "");
     phoenixSetValue("phoenixSetThresholdEur", d.alert_threshold_eur ?? 10);
     phoenixSetValue("phoenixSetThresholdPercent", d.alert_threshold_percent ?? 1);
     phoenixSetValue("phoenixSetCooldownHours", d.alert_cooldown_hours ?? 24);
@@ -110,6 +111,7 @@ function phoenixSettingsPayload() {
     activation_code: phoenixGetValue("phoenixSetActivationCode").trim(),
     telegram_enabled: phoenixGetValue("phoenixSetTelegramEnabled") === "true",
     telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
+    telegram_chat_id: phoenixGetValue("phoenixSetTelegramChatId").trim(),
     alert_threshold_eur: Number(phoenixGetValue("phoenixSetThresholdEur") || 0),
     alert_threshold_percent: Number(phoenixGetValue("phoenixSetThresholdPercent") || 0),
     alert_cooldown_hours: Number(phoenixGetValue("phoenixSetCooldownHours") || 24),
@@ -146,10 +148,11 @@ async function phoenixTestTelegram() {
   try {
     await phoenixCallService("test_telegram", {
       telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
+      telegram_chat_id: phoenixGetValue("phoenixSetTelegramChatId").trim(),
     });
     phoenixSetText("phoenixSettingsStatus", "Test Telegram inviato. Controlla Telegram.");
   } catch (error) {
-    phoenixSetText("phoenixSettingsStatus", "Test Telegram non riuscito. Verifica il servizio notify e i log di Home Assistant.");
+    phoenixSetText("phoenixSettingsStatus", "Test Telegram non riuscito. Verifica servizio notify, Chat ID e log di Home Assistant.");
   } finally {
     if (button) button.disabled = false;
   }
