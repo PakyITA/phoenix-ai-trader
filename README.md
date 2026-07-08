@@ -10,8 +10,9 @@
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Trial](https://img.shields.io/badge/Trial-24h-orange?style=for-the-badge)
+![Annual License](https://img.shields.io/badge/License-Annual-red?style=for-the-badge)
 ![Launch Offer](https://img.shields.io/badge/Launch%20Offer-9.99%E2%82%AC-orange?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.4.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
 [![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PakyITA&repository=phoenix-ai-trader&category=integration)
@@ -37,33 +38,36 @@ Create a virtual crypto portfolio, monitor profit and loss, receive Telegram ale
 1. Install Phoenix from HACS.
 2. Complete the setup wizard.
 3. Use the full 24-hour free trial.
-4. After the trial, Phoenix requires a personal license.
+4. After the trial, Phoenix requires a personal annual license.
 5. Purchase your license via PayPal.
 6. Receive your signed license by email.
-7. Paste the license in **Phoenix AI Trader → Configure**.
+7. Paste the license in **Phoenix AI Trader → Configure** or inside the Phoenix settings panel.
 
 ---
 
-## 🔑 Free Trial & License
+## 🔑 Free Trial & Annual License
 
 Phoenix AI Trader includes a **24-hour free trial**.
 
 After the trial expires, the main dashboard and portfolio sensors are locked until a valid license is configured.
 
+Phoenix licenses are **annual**. A valid license unlocks Phoenix for **12 months from the issue date**. After the annual period ends, the license must be renewed to keep using the premium features.
+
 ### 💥 Launch offer
 
-For the first **15 days**, the personal Phoenix AI Trader license is available for:
+For the first **15 days**, the personal annual Phoenix AI Trader license is available for:
 
 ```text
 9.99 € instead of 19.99 €
 ```
 
-After the launch offer ends, the standard license price is **19.99 €**.
+After the launch offer ends, the standard annual license price is **19.99 €**.
 
 👉 **Buy the launch license:** https://paypal.me/PakyDJ/9.99EUR
 
 Licenses are:
 
+- annual and valid for 12 months from the issue date
 - linked to the buyer's PayPal email
 - personal and non-transferable
 - valid for one Home Assistant installation
@@ -82,7 +86,7 @@ After payment, the signed license is sent by email. To buy a license, use the Pa
 | 📱 **Telegram alerts** | Receive alerts when simulated profit or loss crosses your thresholds |
 | 🎯 **Mission Mode** | Set an initial capital, target capital and time goal |
 | 🏠 **Native entities** | Use sensors and binary sensors in dashboards, scripts and automations |
-| 🔐 **24h trial + license** | Try Phoenix first, then unlock it with a personal signed license |
+| 🔐 **24h trial + annual license** | Try Phoenix first, then unlock it with a personal signed annual license |
 | 🧩 **No YAML required** | Full setup through the Home Assistant integration wizard |
 
 ---
@@ -156,17 +160,20 @@ During the setup wizard you can configure:
 - Email
 - Optional activation code
 - Optional Telegram notifications
+- Home Assistant Telegram notify service, for example `notify.telegram`
 - Profit / loss alert threshold in EUR
 - Profit / loss alert threshold in percent
 - Alert cooldown time
 
-No manual YAML configuration is required.
+No manual YAML configuration is required for Phoenix itself.
+
+> 📱 **Telegram requirement:** Phoenix does not create or configure the Telegram bot automatically. To receive Telegram alerts, you must first configure a working Telegram `notify` service in Home Assistant, then enter that service name in Phoenix.
 
 ---
 
 ## 🧾 Changing License or Settings
 
-Phoenix supports the Home Assistant **Configure** button.
+Phoenix supports the Home Assistant **Configure** button and an in-panel Phoenix settings page.
 
 Go to:
 
@@ -174,11 +181,18 @@ Go to:
 Settings → Devices & services → Phoenix AI Trader → Configure
 ```
 
+or open:
+
+```text
+Phoenix AI Trader → Settings Phoenix
+```
+
 From there you can update:
 
 - license email
 - activation code
 - Telegram notifications
+- Telegram notify service
 - alert thresholds
 - mission settings
 
@@ -188,13 +202,19 @@ From there you can update:
 
 Phoenix can send Home Assistant `notify` alerts when the simulated portfolio reaches a configured profit or loss threshold.
 
-Example service:
+Before enabling Telegram in Phoenix, you must have already configured Telegram notifications in Home Assistant. Phoenix expects an existing notify service such as:
 
 ```text
 notify.telegram
 ```
 
-If your Home Assistant Telegram notification service has a different name, enter it in the setup wizard.
+If your Home Assistant Telegram notification service has a different name, enter that exact service name in the setup wizard or in the Phoenix settings panel.
+
+Phoenix also includes a **Test Telegram** button in the settings panel. When pressed, Phoenix sends this message using the configured notify service:
+
+```text
+Test Telegram Passato
+```
 
 ---
 
@@ -251,7 +271,8 @@ Everything is simulated locally inside Home Assistant.
 |---|---|
 | 🐛 **Bugs** | Open a GitHub Issue |
 | 💡 **Ideas** | Use GitHub Discussions or contact the developer |
-| 🔑 **License** | Launch offer: **9.99 € for 15 days**, then **19.99 €** · PayPal purchase → signed license by email |
+| 🔑 **License** | Annual license · Launch offer: **9.99 € for 15 days**, then **19.99 €/year** · PayPal purchase → signed license by email |
+| 📱 **Telegram** | Requires an already configured Home Assistant Telegram `notify` service |
 | 🇮🇹 **Italian support** | Italian documentation available in [README.it.md](README.it.md) |
 
 ---
@@ -278,7 +299,7 @@ Upcoming releases may include:
 
 Phoenix AI Trader is proprietary commercial software.
 
-A valid license grants personal, non-transferable use on the purchaser's own Home Assistant instance.
+A valid annual license grants personal, non-transferable use on the purchaser's own Home Assistant instance for 12 months from the issue date.
 
 Redistribution, resale, sublicensing, publishing modified copies, or making the software available to third parties is not allowed without written permission.
 
