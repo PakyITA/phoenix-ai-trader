@@ -10,8 +10,9 @@
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1+-41BDF5?style=for-the-badge)
 ![Demo](https://img.shields.io/badge/Demo-24h-orange?style=for-the-badge)
+![Licenza annuale](https://img.shields.io/badge/Licenza-Annuale-red?style=for-the-badge)
 ![Offerta Lancio](https://img.shields.io/badge/Offerta%20Lancio-9.99%E2%82%AC-orange?style=for-the-badge)
-![Versione](https://img.shields.io/badge/version-0.3.3-blue?style=for-the-badge)
+![Versione](https://img.shields.io/badge/version-0.4.0-blue?style=for-the-badge)
 ![Licenza](https://img.shields.io/badge/license-commercial-red?style=for-the-badge)
 
 [![Aggiungi a Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PakyITA&repository=phoenix-ai-trader&category=integration)
@@ -37,31 +38,34 @@ Puoi creare un portafoglio crypto virtuale, monitorare guadagni e perdite, ricev
 1. Installa Phoenix da HACS.
 2. Completa il wizard di configurazione.
 3. Usa la demo gratuita completa per 24 ore.
-4. Dopo la demo, Phoenix richiede una licenza personale.
+4. Dopo la demo, Phoenix richiede una licenza personale annuale.
 5. Acquista la licenza tramite PayPal.
 6. Ricevi la licenza firmata via email.
-7. Incolla la licenza in **Phoenix AI Trader → Configura**.
+7. Incolla la licenza in **Phoenix AI Trader → Configura** oppure nella pagina impostazioni interna di Phoenix.
 
 ---
 
-## 🔑 Demo gratuita e licenza
+## 🔑 Demo gratuita e licenza annuale
 
 Phoenix AI Trader include una **demo gratuita di 24 ore**.
 
 Alla scadenza della demo, dashboard principale e sensori del portafoglio vengono bloccati fino all'inserimento di una licenza valida.
 
+Le licenze Phoenix sono **annuali**. Una licenza valida sblocca Phoenix per **12 mesi dalla data di emissione**. Al termine del periodo annuale, la licenza deve essere rinnovata per continuare a usare le funzioni premium.
+
 ### 💥 Offerta lancio
 
-Per i primi **15 giorni**, la licenza personale Phoenix AI Trader è disponibile a:
+Per i primi **15 giorni**, la licenza personale annuale Phoenix AI Trader è disponibile a:
 
 ```text
 9,99 € invece di 19,99 €
 ```
 
-Al termine dell'offerta lancio, il prezzo standard della licenza sarà **19,99 €**.
+Al termine dell'offerta lancio, il prezzo standard della licenza annuale sarà **19,99 €**.
 
 Le licenze sono:
 
+- annuali e valide per 12 mesi dalla data di emissione
 - legate all'email PayPal dell'acquirente
 - personali e non trasferibili
 - valide per una installazione Home Assistant
@@ -80,7 +84,7 @@ Per acquistare una licenza, contatta lo sviluppatore dopo l'installazione oppure
 | 📱 **Alert Telegram** | Ricevi avvisi quando guadagni o perdite simulate superano le soglie impostate |
 | 🎯 **Mission Mode** | Imposta capitale iniziale, capitale obiettivo e durata della missione |
 | 🏠 **Entità native** | Usa sensori e binary sensor in dashboard, script e automazioni |
-| 🔐 **Demo 24h + licenza** | Prova Phoenix, poi sbloccalo con una licenza personale firmata |
+| 🔐 **Demo 24h + licenza annuale** | Prova Phoenix, poi sbloccalo con una licenza personale annuale firmata |
 | 🧩 **Zero YAML** | Configurazione completa dal wizard Home Assistant |
 
 ---
@@ -154,17 +158,20 @@ Durante il wizard puoi configurare:
 - email
 - codice di attivazione opzionale
 - notifiche Telegram opzionali
+- servizio notify Telegram di Home Assistant, per esempio `notify.telegram`
 - soglia alert guadagno / perdita in euro
 - soglia alert guadagno / perdita in percentuale
 - tempo minimo tra un alert e l'altro
 
-Non è richiesta alcuna configurazione YAML manuale.
+Non è richiesta configurazione YAML manuale per Phoenix.
+
+> 📱 **Requisito Telegram:** Phoenix non crea e non configura automaticamente il bot Telegram. Per ricevere gli alert Telegram devi prima configurare un servizio `notify` Telegram funzionante in Home Assistant, poi inserire il nome del servizio in Phoenix.
 
 ---
 
 ## 🧾 Modifica licenza o impostazioni
 
-Phoenix supporta il pulsante **Configura** di Home Assistant.
+Phoenix supporta il pulsante **Configura** di Home Assistant e una pagina impostazioni interna.
 
 Vai su:
 
@@ -172,11 +179,18 @@ Vai su:
 Impostazioni → Dispositivi e servizi → Phoenix AI Trader → Configura
 ```
 
+oppure apri:
+
+```text
+Phoenix AI Trader → Impostazioni Phoenix
+```
+
 Da qui puoi modificare:
 
 - email licenza
 - codice attivazione
 - notifiche Telegram
+- servizio notify Telegram
 - soglie alert
 - impostazioni missione
 
@@ -186,13 +200,19 @@ Da qui puoi modificare:
 
 Phoenix può inviare avvisi tramite un servizio `notify` di Home Assistant quando il portafoglio simulato raggiunge una soglia configurata di guadagno o perdita.
 
-Esempio di servizio:
+Prima di abilitare Telegram in Phoenix, devi avere già configurato le notifiche Telegram in Home Assistant. Phoenix si aspetta un servizio notify esistente, ad esempio:
 
 ```text
 notify.telegram
 ```
 
-Se il servizio Telegram nel tuo Home Assistant ha un nome diverso, puoi inserirlo nel wizard.
+Se il servizio Telegram nel tuo Home Assistant ha un nome diverso, inserisci esattamente quel nome nel wizard o nella pagina impostazioni Phoenix.
+
+Phoenix include anche un pulsante **Test Telegram** nella pagina impostazioni. Quando viene premuto, Phoenix invia questo messaggio usando il servizio notify configurato:
+
+```text
+Test Telegram Passato
+```
 
 ---
 
@@ -249,7 +269,8 @@ Tutto viene simulato localmente dentro Home Assistant.
 |---|---|
 | 🐛 **Bug** | Apri una GitHub Issue |
 | 💡 **Idee** | Usa GitHub Discussions o contatta lo sviluppatore |
-| 🔑 **Licenza** | Offerta lancio: **9,99 € per 15 giorni**, poi **19,99 €** · pagamento PayPal → licenza firmata via email |
+| 🔑 **Licenza** | Licenza annuale · Offerta lancio: **9,99 € per 15 giorni**, poi **19,99 €/anno** · pagamento PayPal → licenza firmata via email |
+| 📱 **Telegram** | Richiede un servizio `notify` Telegram già configurato in Home Assistant |
 | 🇬🇧 **Supporto inglese** | Documentazione inglese disponibile in [README.md](README.md) |
 
 ---
@@ -276,7 +297,7 @@ Le prossime versioni potrebbero includere:
 
 Phoenix AI Trader è software proprietario commerciale.
 
-Una licenza valida concede l'utilizzo personale e non trasferibile sulla propria istanza Home Assistant.
+Una licenza annuale valida concede l'utilizzo personale e non trasferibile sulla propria istanza Home Assistant per 12 mesi dalla data di emissione.
 
 Non è consentito redistribuire, rivendere, sublicenziare, pubblicare copie modificate o rendere il software disponibile a terzi senza autorizzazione scritta.
 
