@@ -138,6 +138,23 @@ async function phoenixSaveSettings(resetAfterSave = false) {
   }
 }
 
+async function phoenixTestTelegram() {
+  const button = document.getElementById("phoenixTestTelegramBtn");
+  if (button) button.disabled = true;
+  phoenixSetText("phoenixSettingsStatus", "Invio test Telegram...");
+
+  try {
+    await phoenixCallService("test_telegram", {
+      telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
+    });
+    phoenixSetText("phoenixSettingsStatus", "Test Telegram inviato. Controlla Telegram.");
+  } catch (error) {
+    phoenixSetText("phoenixSettingsStatus", "Test Telegram non riuscito. Verifica il servizio notify e i log di Home Assistant.");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const resetButton = document.getElementById("phoenixResetMissionBtn");
   if (resetButton) resetButton.addEventListener("click", phoenixResetMission);
@@ -147,6 +164,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const closeSettingsButton = document.getElementById("phoenixCloseSettingsBtn");
   if (closeSettingsButton) closeSettingsButton.addEventListener("click", phoenixCloseSettings);
+
+  const testTelegramButton = document.getElementById("phoenixTestTelegramBtn");
+  if (testTelegramButton) testTelegramButton.addEventListener("click", phoenixTestTelegram);
 
   const saveSettingsButton = document.getElementById("phoenixSaveSettingsBtn");
   if (saveSettingsButton) saveSettingsButton.addEventListener("click", () => phoenixSaveSettings(false));
