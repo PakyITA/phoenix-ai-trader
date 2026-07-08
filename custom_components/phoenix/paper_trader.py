@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 AUTO_TRADE_MIN_SCORE = 80
 AUTO_TRADE_ALLOCATION_PERCENT = 25.0
 MAX_OPEN_POSITIONS = 3
+AUTO_TRADE_COOLDOWN_MINUTES = 15
 
 
 def _num(value: Any, default: float = 0.0) -> float:
@@ -19,6 +20,15 @@ def _num(value: Any, default: float = 0.0) -> float:
 
 def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _parse_dt(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
 
 
 def _position_symbols(status: dict[str, Any]) -> set[str]:
@@ -46,6 +56,11 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
         return data, None
 
     if settings.get("auto_paper_trading_enabled", True) is False:
+        return data, None
+
+    cooldown_minutes = int(settings.get("auto_trade_cooldown_minutes", AUTO_TRADE_COOLDOWN_MINUTES) or AUTO_TRADE_COOLDOWN_MINUTES)
+    last_trade_at = _parse_dt(data.get("last_auto_trade_at") or settings.get("last_auto_trade_at"))
+    if last_trade_at and datetime.now() - last_trade_at < timedelta(minutes=cooldown_minutes):
         return data, None
 
     positions = data.get("positions") if isinstance(data.get("positions"), list) else []
@@ -120,6 +135,9 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
     data["last_auto_trade_amount"] = amount
     data["paper_trader_status"] = "active"
     data["paper_trader_note"] = "Phoenix investe automaticamente solo in Paper Trading, senza ordini reali."
+    data["auto_trade_allocation_percent"] = allocation_percent
+    data["auto_trade_min_score"] = AUTO_TRADE_MIN_SCORE
+    data["auto_trade_cooldown_minutes"] = cooldown_minutes
 
     event = {
         "time": position["opened_at"],
