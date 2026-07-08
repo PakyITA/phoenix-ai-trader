@@ -1,5 +1,6 @@
 const STATUS_URLS = [
   "/local/phoenix-ai-trader-ha/phoenix_status.json",
+  "/local/phoenix-ai-trader-ha/status.json",
   "/local/phoenix-ai-trader/phoenix_status.json",
   "/local/phoenix-ai-trader/status.json"
 ];
@@ -11,6 +12,7 @@ const PAYPAL_TEXT_EN = "Buy license €9.99";
 const LANG_KEY = "phoenixAiTraderLanguage";
 let currentLang = localStorage.getItem(LANG_KEY) || "it";
 let lastData = null;
+let lastLoadFailed = false;
 
 const I18N = {
   it: {
@@ -24,6 +26,8 @@ const I18N = {
     demo: "Demo",
     dataUnavailable: "Dati non disponibili",
     unableToRead: "🔴 Impossibile leggere i dati Phoenix",
+    renderError: "🔴 Errore durante il rendering della dashboard Phoenix",
+    renderCheck: "Apri la console del browser o i log Home Assistant e aggiorna Phoenix. I dati sono stati letti, ma la dashboard ha incontrato un errore grafico.",
     dataCheck: "Controlla che i file dati Phoenix siano raggiungibili da Home Assistant.",
     resetMission: "🔄 Reset missione",
     settings: "⚙️ Impostazioni Phoenix",
@@ -112,6 +116,8 @@ const I18N = {
     demo: "Demo",
     dataUnavailable: "Data unavailable",
     unableToRead: "🔴 Unable to read Phoenix data",
+    renderError: "🔴 Error while rendering the Phoenix dashboard",
+    renderCheck: "Open the browser console or Home Assistant logs and update Phoenix. Data was loaded, but the dashboard hit a visual rendering error.",
     dataCheck: "Check that Phoenix data files are reachable from Home Assistant.",
     resetMission: "🔄 Reset mission",
     settings: "⚙️ Phoenix settings",
@@ -191,7 +197,11 @@ const I18N = {
   }
 };
 
-const t = key => I18N[currentLang][key] ?? I18N.it[key] ?? key;
+function locale() {
+  return I18N[currentLang] || I18N.it;
+}
+
+const t = key => locale()[key] ?? I18N.it[key] ?? key;
 const money = value => `${Number(value || 0).toFixed(2)} €`;
 const pct = value => `${Number(value || 0).toFixed(2)}%`;
 const cls = value => Number(value || 0) >= 0 ? "good" : "bad";
@@ -215,7 +225,9 @@ function updateStaticText() {
   if (notice) notice.textContent = t("paperNotice");
   if (reset) reset.textContent = t("resetMission");
   if (settings) settings.textContent = t("settings");
-  if (statusEl && !lastData) statusEl.textContent = t("loading");
+  if (statusEl && !lastData && !lastLoadFailed) statusEl.textContent = t("loading");
+  if (statusEl && lastLoadFailed) statusEl.textContent = t("unableToRead");
+  if (app && lastLoadFailed) app.innerHTML = `<div class="notice expired">${t("dataCheck")}</div>`;
   if (langIt) langIt.classList.toggle("active", currentLang === "it");
   if (langEn) langEn.classList.toggle("active", currentLang === "en");
 }
@@ -225,8 +237,9 @@ function setLanguage(lang) {
   localStorage.setItem(LANG_KEY, currentLang);
   updateStaticText();
   if (lastData) {
-    setPill(lastData);
-    renderDashboardOrLocked(lastData);
+    renderLoadedData(lastData);
+  } else {
+    load();
   }
 }
 
@@ -385,20 +398,20 @@ function renderMissionProgressPanel(data) {
   const needed = Math.max(0, target - start);
   return `<div class="card full"><h2>${t("missionProgress")}</h2>
     ${progressBar(t("missionTime"), time.percent, time.label, "⏱️")}
-    ${progressBar(t("capitalTarget"), capitalProgress, I18N[currentLang].gainedOnNeeded(money(gained), money(needed), money(target)), "💰")}
+    ${progressBar(t("capitalTarget"), capitalProgress, locale().gainedOnNeeded(money(gained), money(needed), money(target)), "💰")}
   </div>`;
 }
 
 function renderPaperTraderPanel(data) {
   const status = data.paper_trader_status || t("waitingSetup");
   const lastTrade = data.last_trade && data.last_trade !== "N/D" ? data.last_trade : t("noVirtualOperation");
-  const allocation = data.auto_trade_allocation_percent ? I18N[currentLang].liquidityPercent(Number(data.auto_trade_allocation_percent).toFixed(0)) : I18N[currentLang].liquidityPercent(25);
+  const allocation = data.auto_trade_allocation_percent ? locale().liquidityPercent(Number(data.auto_trade_allocation_percent).toFixed(0)) : locale().liquidityPercent(25);
   const minScore = data.auto_trade_min_score || 80;
   return `<div class="card wide"><h2>${t("phoenixRole")}</h2><p class="small">${t("roleText")}</p>${rows([
     [t("mode"), t("autoPaperTrader"), "good"],
     [t("support"), t("supportText")],
     [t("status"), status],
-    [t("rule"), I18N[currentLang].ruleText(minScore)],
+    [t("rule"), locale().ruleText(minScore)],
     [t("capitalPerTrade"), allocation],
     [t("lastOperation"), lastTrade],
     [t("safety"), t("noRealOrder"), "warn"]
@@ -454,7 +467,9 @@ async function fetchStatus() {
     try {
       const response = await fetch(`${url}?ts=${Date.now()}`);
       if (response.ok) return await response.json();
-    } catch (error) {}
+    } catch (error) {
+      console.debug("Phoenix status fetch failed", url, error);
+    }
   }
   throw new Error("Phoenix status file not found");
 }
@@ -467,19 +482,38 @@ function renderDashboardOrLocked(data) {
   }
 }
 
-async function load() {
+function renderLoadedData(data) {
+  lastLoadFailed = false;
   try {
-    const data = await fetchStatus();
-    lastData = data;
     setPill(data);
     statusEl.textContent = `🟢 ${t("online")} · v${data.version || "--"} · ${t("lastUpdate")} ${data.last_update || "--"}`;
     renderDashboardOrLocked(data);
   } catch (error) {
+    console.error("Phoenix dashboard render error", error);
+    pill.className = "pill expired";
+    pill.textContent = t("dataUnavailable");
+    statusEl.textContent = t("renderError");
+    app.innerHTML = `<div class="notice expired">${t("renderCheck")}</div>`;
+  }
+}
+
+async function load() {
+  let data;
+  try {
+    data = await fetchStatus();
+  } catch (error) {
+    console.error("Phoenix status load error", error);
+    lastData = null;
+    lastLoadFailed = true;
     pill.className = "pill expired";
     pill.textContent = t("dataUnavailable");
     statusEl.textContent = t("unableToRead");
     app.innerHTML = `<div class="notice expired">${t("dataCheck")}</div>`;
+    return;
   }
+
+  lastData = data;
+  renderLoadedData(data);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
