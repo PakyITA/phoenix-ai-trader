@@ -18,6 +18,7 @@ from .const import (
     TRADES_FILENAME,
 )
 from .license import build_license_payload, evaluate_license
+from .trial_guard import ensure_trial_guard
 
 
 PHOENIX_VERSION = "0.4.0"
@@ -116,18 +117,31 @@ def update_settings(data_dir: str, updates: dict[str, Any]) -> None:
     write_json(settings_path(data_dir), {**settings, **updates})
 
 
-def _license_overlay(settings: dict[str, Any]) -> dict[str, Any]:
-    license_state = evaluate_license(settings)
+def _settings_with_trial_guard(data_dir: str, settings: dict[str, Any]) -> dict[str, Any]:
+    license_key = _clean_string(settings.get("license_key"), "")
+    # A valid signed license does not need the trial guard. Demo/invalid states do.
+    if license_key:
+        guarded = dict(settings)
+    else:
+        guarded = {**settings, **ensure_trial_guard(data_dir, settings)}
+        if guarded != settings:
+            write_json(settings_path(data_dir), guarded)
+    return guarded
+
+
+def _license_overlay(data_dir: str, settings: dict[str, Any]) -> dict[str, Any]:
+    guarded_settings = _settings_with_trial_guard(data_dir, settings)
+    license_state = evaluate_license(guarded_settings)
     return {
         **license_state,
-        "email": settings.get("email", ""),
+        "email": guarded_settings.get("email", ""),
         "trial_mode": license_state["license_status"] == "demo",
         "locked": license_state["demo_expired"],
-        "telegram_enabled": settings.get("telegram_enabled", False),
-        "telegram_service": settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
-        "alert_threshold_eur": settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
-        "alert_threshold_percent": settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
-        "alert_cooldown_hours": settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
+        "telegram_enabled": guarded_settings.get("telegram_enabled", False),
+        "telegram_service": guarded_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
+        "alert_threshold_eur": guarded_settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
+        "alert_threshold_percent": guarded_settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
+        "alert_cooldown_hours": guarded_settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
     }
 
 
@@ -200,6 +214,7 @@ def ensure_data_files(
         "last_alert_value": existing_settings.get("last_alert_value"),
         **license_payload,
     }
+    settings = _settings_with_trial_guard(data_dir, settings)
 
     default_status = {
         "online": False,
@@ -277,7 +292,7 @@ def ensure_data_files(
         **base_status,
         **configured_status,
         "version": PHOENIX_VERSION,
-        **_license_overlay(settings),
+        **_license_overlay(data_dir, settings),
     })
     write_json(status_path(data_dir), status)
     write_json_if_missing(history_path(data_dir), [])
@@ -290,8 +305,8 @@ def read_status(data_dir: str) -> dict[str, Any]:
         return {"online": False, "error": f"{STATUS_FILENAME} not found"}
 
     status = read_json(path, default={})
-    settings = read_settings(data_dir)
-    normalized = normalize_accounting({**status, "version": PHOENIX_VERSION, **_license_overlay(settings)})
+    settings = _settings_with_trial_guard(data_dir, read_settings(data_dir))
+    normalized = normalize_accounting({**status, "version": PHOENIX_VERSION, **_license_overlay(data_dir, settings)})
 
     keys = {
         "version",
@@ -320,6 +335,7 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "demo_expired",
         "demo_remaining_seconds",
         "demo_expires_at",
+        "trial_lock_reason",
         "telegram_enabled",
         "telegram_service",
     }
