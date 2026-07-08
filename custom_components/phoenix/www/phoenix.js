@@ -84,6 +84,7 @@ function renderLocked(data) {
         <h2>⛔ Demo gratuita terminata</h2>
         <p><b>La prova gratuita di 24 ore è terminata.</b> Per continuare a usare Phoenix AI Trader devi acquistare e inserire una licenza personale annuale.</p>
         <div class="license-badge">🔑 Offerta lancio 9,99 € · poi 19,99 €/anno</div>
+        <p>Phoenix analizza il mercato crypto, apre posizioni virtuali automatiche e ti mostra se la strategia sta performando, prima di rischiare denaro reale.</p>
         <p>Con la licenza attiva sblocchi dashboard, sensori, Top 20 mercato, monitoraggio P/L e alert Telegram.</p>
         <div class="steps">
           <div class="step"><b>1. Acquista</b><br><span class="small">Paga con PayPal usando l'offerta lancio.</span></div>
@@ -94,7 +95,7 @@ function renderLocked(data) {
         <a class="btn btn-pay" href="${PAYPAL_LINK}" target="_blank" rel="noopener">💳 ${PAYPAL_TEXT}</a>
         ${insertLicenseButton()}
         <a class="btn" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">📩 Ho pagato, richiedo licenza</a>
-        <p class="small">⚠️ Phoenix è solo Paper Trading e non fornisce consulenza finanziaria. Ogni decisione economica resta sotto responsabilità dell'utente.</p>
+        <p class="small">⚠️ Phoenix è un supporto privato e autonomo alla valutazione di strategie in Paper Trading. Non fornisce consulenza finanziaria e non garantisce guadagni. Ogni decisione economica resta sotto responsabilità dell'utente.</p>
       </div>
     </section>`;
 }
@@ -117,8 +118,9 @@ function renderPaperTraderPanel(data) {
   const lastTrade = data.last_trade || "Nessuna operazione virtuale ancora aperta";
   const allocation = data.auto_trade_allocation_percent ? `${Number(data.auto_trade_allocation_percent).toFixed(0)}% della liquidità disponibile` : "25% della liquidità disponibile";
   const minScore = data.auto_trade_min_score || 80;
-  return `<div class="card wide"><h2>🤖 Ruolo Phoenix</h2>${rows([
+  return `<div class="card wide"><h2>🤖 Ruolo Phoenix</h2><p class="small">Phoenix analizza il mercato crypto, apre posizioni virtuali automatiche e ti mostra se la strategia sta performando, prima di rischiare denaro reale.</p>${rows([
     ["Modalità", "Paper Trader automatico", "good"],
+    ["Supporto", "privato e autonomo alla valutazione della strategia"],
     ["Stato", status],
     ["Regola", `apre posizioni virtuali con score ≥ ${minScore}`],
     ["Capitale per trade", allocation],
