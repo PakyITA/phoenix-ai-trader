@@ -73,6 +73,7 @@ async function phoenixOpenSettings() {
   const panel = document.getElementById("phoenixSettingsPanel");
   if (!panel) return;
   panel.classList.add("open");
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
   phoenixSetText("phoenixSettingsStatus", "Caricamento impostazioni...");
 
   try {
@@ -157,6 +158,9 @@ async function phoenixTestTelegram() {
     if (button) button.disabled = false;
   }
 }
+
+window.phoenixOpenSettings = phoenixOpenSettings;
+window.phoenixCloseSettings = phoenixCloseSettings;
 
 window.addEventListener("DOMContentLoaded", () => {
   const resetButton = document.getElementById("phoenixResetMissionBtn");
