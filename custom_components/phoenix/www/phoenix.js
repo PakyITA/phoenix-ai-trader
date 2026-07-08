@@ -112,6 +112,21 @@ function renderLicensePanel(data) {
   ])}</div>`;
 }
 
+function renderPaperTraderPanel(data) {
+  const status = data.paper_trader_status || "in attesa setup";
+  const lastTrade = data.last_trade || "Nessuna operazione virtuale ancora aperta";
+  const allocation = data.auto_trade_allocation_percent ? `${Number(data.auto_trade_allocation_percent).toFixed(0)}% della liquidità disponibile` : "25% della liquidità disponibile";
+  const minScore = data.auto_trade_min_score || 80;
+  return `<div class="card wide"><h2>🤖 Ruolo Phoenix</h2>${rows([
+    ["Modalità", "Paper Trader automatico", "good"],
+    ["Stato", status],
+    ["Regola", `apre posizioni virtuali con score ≥ ${minScore}`],
+    ["Capitale per trade", allocation],
+    ["Ultima operazione", lastTrade],
+    ["Sicurezza", "nessun ordine reale eseguito", "warn"]
+  ])}</div>`;
+}
+
 function renderDashboard(data) {
   const profit = Number(data.total_profit || 0);
   const unrealized = Number(data.unrealized_pnl || 0);
@@ -132,6 +147,7 @@ function renderDashboard(data) {
         ["Stato licenza", data.license_status || "demo"],
         ["Telegram", data.telegram_enabled ? "Attivo" : "Non attivo", data.telegram_enabled ? "good" : "warn"]
       ])}</div>
+      ${renderPaperTraderPanel(data)}
       ${renderLicensePanel(data)}
       <div class="card wide"><h2>🏆 Top setup</h2>${rows([
         ["Moneta", coinHtml(data.top_crypto)],
