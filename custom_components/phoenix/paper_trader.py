@@ -43,6 +43,31 @@ def _position_symbols(status: dict[str, Any]) -> set[str]:
     return symbols
 
 
+def _candidate_setups(data: dict[str, Any]) -> list[dict[str, Any]]:
+    top20 = data.get("top20") if isinstance(data.get("top20"), list) else []
+    setups = [item for item in top20 if isinstance(item, dict)]
+    if setups:
+        return setups
+
+    symbol = str(data.get("top_crypto") or "").strip().upper()
+    score = int(_num(data.get("top_score"), 0))
+    if not symbol or symbol == "N/D" or score <= 0:
+        return []
+
+    return [
+        {
+            "symbol": symbol,
+            "pair": data.get("top_pair") or f"{symbol}/USDT",
+            "name": data.get("top_crypto_name") or symbol,
+            "score": score,
+            "confidence": data.get("top_confidence", "N/D"),
+            "quality": data.get("top_quality", "N/D"),
+            "market_risk": data.get("market_risk", "N/D"),
+            "change_24h_percent": data.get("change_24h_percent", 0.0),
+        }
+    ]
+
+
 def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any] | None]:
     """Open a virtual paper-trading position from the best market setup.
 
@@ -53,29 +78,32 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
     settings = settings or {}
 
     if data.get("locked") or data.get("demo_expired"):
+        data["paper_trader_status"] = "bloccato"
         return data, None
 
     if settings.get("auto_paper_trading_enabled", True) is False:
+        data["paper_trader_status"] = "disattivato"
         return data, None
 
     cooldown_minutes = int(settings.get("auto_trade_cooldown_minutes", AUTO_TRADE_COOLDOWN_MINUTES) or AUTO_TRADE_COOLDOWN_MINUTES)
     last_trade_at = _parse_dt(data.get("last_auto_trade_at") or settings.get("last_auto_trade_at"))
     if last_trade_at and datetime.now() - last_trade_at < timedelta(minutes=cooldown_minutes):
+        data["paper_trader_status"] = "cooldown"
         return data, None
 
     positions = data.get("positions") if isinstance(data.get("positions"), list) else []
     if len(positions) >= int(settings.get("max_open_positions", MAX_OPEN_POSITIONS) or MAX_OPEN_POSITIONS):
+        data["paper_trader_status"] = "limite posizioni raggiunto"
         return data, None
 
-    top20 = data.get("top20") if isinstance(data.get("top20"), list) else []
-    if not top20:
+    setups = _candidate_setups(data)
+    if not setups:
+        data["paper_trader_status"] = "nessun setup disponibile"
         return data, None
 
     open_symbols = _position_symbols(data)
     candidate = None
-    for setup in top20:
-        if not isinstance(setup, dict):
-            continue
+    for setup in setups:
         symbol = str(setup.get("symbol") or "").strip().upper()
         score = int(_num(setup.get("score"), 0))
         if not symbol or symbol in open_symbols or score < AUTO_TRADE_MIN_SCORE:
@@ -84,16 +112,20 @@ def maybe_open_paper_position(status: dict[str, Any], settings: dict[str, Any] |
         break
 
     if candidate is None:
+        best_score = max([int(_num(item.get("score"), 0)) for item in setups] or [0])
+        data["paper_trader_status"] = f"setup sotto soglia {best_score}/{AUTO_TRADE_MIN_SCORE}"
         return data, None
 
     balance = _num(data.get("balance"), _num(data.get("start_balance"), 0.0))
     if balance <= 0:
+        data["paper_trader_status"] = "liquidità insufficiente"
         return data, None
 
     allocation_percent = _num(settings.get("auto_trade_allocation_percent"), AUTO_TRADE_ALLOCATION_PERCENT)
     allocation_percent = max(1.0, min(100.0, allocation_percent))
     amount = round(balance * allocation_percent / 100.0, 2)
     if amount <= 0:
+        data["paper_trader_status"] = "importo insufficiente"
         return data, None
 
     symbol = str(candidate.get("symbol") or "N/D").strip().upper()
