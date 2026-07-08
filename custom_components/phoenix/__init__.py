@@ -21,6 +21,7 @@ from .const import (
     CONF_LICENSE_KEY,
     CONF_START_CAPITAL,
     CONF_TARGET_CAPITAL,
+    CONF_TELEGRAM_CHAT_ID,
     CONF_TELEGRAM_ENABLED,
     CONF_TELEGRAM_SERVICE,
     DEFAULT_ACTIVATION_CODE,
@@ -32,6 +33,7 @@ from .const import (
     DEFAULT_EMAIL,
     DEFAULT_START_CAPITAL,
     DEFAULT_TARGET_CAPITAL,
+    DEFAULT_TELEGRAM_CHAT_ID,
     DEFAULT_TELEGRAM_ENABLED,
     DEFAULT_TELEGRAM_SERVICE,
     DOMAIN,
@@ -69,7 +71,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=052",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=053",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -95,6 +97,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data.setdefault(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)
     data.setdefault(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)
     data.setdefault(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE)
+    data.setdefault(CONF_TELEGRAM_CHAT_ID, DEFAULT_TELEGRAM_CHAT_ID)
     data.setdefault(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)
     data.setdefault(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)
     data.setdefault(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)
@@ -103,7 +106,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry,
         data=data,
         options=options,
-        version=8,
+        version=9,
     )
     return True
 
@@ -144,6 +147,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             CONF_LICENSE_KEY: payload.get(CONF_LICENSE_KEY, config.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)),
             CONF_TELEGRAM_ENABLED: bool(payload.get(CONF_TELEGRAM_ENABLED, config.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED))),
             CONF_TELEGRAM_SERVICE: payload.get(CONF_TELEGRAM_SERVICE, config.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE)),
+            CONF_TELEGRAM_CHAT_ID: payload.get(CONF_TELEGRAM_CHAT_ID, config.get(CONF_TELEGRAM_CHAT_ID, DEFAULT_TELEGRAM_CHAT_ID)),
             CONF_ALERT_THRESHOLD_EUR: float(payload.get(CONF_ALERT_THRESHOLD_EUR, config.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR))),
             CONF_ALERT_THRESHOLD_PERCENT: float(payload.get(CONF_ALERT_THRESHOLD_PERCENT, config.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT))),
             CONF_ALERT_COOLDOWN_HOURS: int(payload.get(CONF_ALERT_COOLDOWN_HOURS, config.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS))),
@@ -167,15 +171,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             or current_config.get(CONF_TELEGRAM_SERVICE)
             or DEFAULT_TELEGRAM_SERVICE
         ).strip()
+        telegram_chat_id = str(
+            payload.get(CONF_TELEGRAM_CHAT_ID)
+            or current_config.get(CONF_TELEGRAM_CHAT_ID)
+            or DEFAULT_TELEGRAM_CHAT_ID
+        ).strip()
 
         if not telegram_service or "." not in telegram_service:
             raise ValueError(f"Invalid Telegram notify service: {telegram_service}")
 
         domain, service = telegram_service.split(".", 1)
+        service_data = {"message": "Test Telegram Passato"}
+        if telegram_chat_id:
+            service_data["target"] = telegram_chat_id
+
         await hass.services.async_call(
             domain,
             service,
-            {"message": "Test Telegram Passato"},
+            service_data,
             blocking=True,
         )
 
