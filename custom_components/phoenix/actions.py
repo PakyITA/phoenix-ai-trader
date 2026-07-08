@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from .accounting import normalize_accounting
+from .license import build_license_payload
 from .storage import (
     PHOENIX_VERSION,
     _license_overlay,
@@ -14,6 +15,76 @@ from .storage import (
     trades_path,
     write_json,
 )
+
+
+def _float(value: Any, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def _int(value: Any, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
+def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str, Any]:
+    settings = read_json(settings_path(data_dir), default={})
+    status = read_json(status_path(data_dir), default={})
+    now = now_string()
+
+    start_capital = _float(payload.get("start_capital"), _float(settings.get("start_capital"), 100.0))
+    target_capital = _float(payload.get("target_capital"), _float(settings.get("target_capital"), 1000.0))
+    duration_value = _int(payload.get("duration_value"), _int(settings.get("duration_value"), 7))
+    duration_unit = str(payload.get("duration_unit") or settings.get("duration_unit") or "days")
+    email = str(payload.get("email") if payload.get("email") is not None else settings.get("email", "")).strip()
+    activation_code = str(payload.get("activation_code") or settings.get("license_key", "")).strip()
+
+    license_payload = build_license_payload(
+        email=email,
+        license_key=activation_code,
+        demo_started_at=settings.get("demo_started_at"),
+    )
+
+    updated_settings = {
+        **settings,
+        "paper_trading": True,
+        "start_capital": start_capital,
+        "target_capital": target_capital,
+        "duration_value": duration_value,
+        "duration_unit": duration_unit,
+        "email": email,
+        "license_key": activation_code,
+        "telegram_enabled": bool(payload.get("telegram_enabled", settings.get("telegram_enabled", False))),
+        "telegram_service": str(payload.get("telegram_service") or settings.get("telegram_service") or "notify.telegram").strip(),
+        "alert_threshold_eur": _float(payload.get("alert_threshold_eur"), _float(settings.get("alert_threshold_eur"), 10.0)),
+        "alert_threshold_percent": _float(payload.get("alert_threshold_percent"), _float(settings.get("alert_threshold_percent"), 1.0)),
+        "alert_cooldown_hours": _int(payload.get("alert_cooldown_hours"), _int(settings.get("alert_cooldown_hours"), 24)),
+        **license_payload,
+    }
+    write_json(settings_path(data_dir), updated_settings)
+
+    mission = status.get("mission") if isinstance(status.get("mission"), dict) else {}
+    updated_status = normalize_accounting({
+        **status,
+        "version": PHOENIX_VERSION,
+        "last_update": now,
+        "start_balance": start_capital,
+        "target_capital": target_capital,
+        "mission": {
+            **mission,
+            "start_capital": start_capital,
+            "target_capital": target_capital,
+            "duration_value": duration_value,
+            "duration_unit": duration_unit,
+        },
+        **_license_overlay(updated_settings),
+    })
+    write_json(status_path(data_dir), updated_status)
+    return updated_status
 
 
 def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
