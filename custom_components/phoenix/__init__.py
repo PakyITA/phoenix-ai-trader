@@ -69,7 +69,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             config={
                 "_panel_custom": {
                     "name": "phoenix-ai-trader-panel",
-                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=051",
+                    "module_url": "/phoenix_ai_trader/phoenix-panel.js?v=052",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }
@@ -158,11 +158,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         current_config = {**entry.data, **entry.options, **runtime}
         await hass.async_add_executor_job(reset_mission, data_dir, current_config)
 
+    async def _handle_test_telegram(call: ServiceCall) -> None:
+        payload = dict(call.data or {})
+        runtime = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
+        current_config = {**entry.data, **entry.options, **runtime}
+        telegram_service = str(
+            payload.get(CONF_TELEGRAM_SERVICE)
+            or current_config.get(CONF_TELEGRAM_SERVICE)
+            or DEFAULT_TELEGRAM_SERVICE
+        ).strip()
+
+        if not telegram_service or "." not in telegram_service:
+            raise ValueError(f"Invalid Telegram notify service: {telegram_service}")
+
+        domain, service = telegram_service.split(".", 1)
+        await hass.services.async_call(
+            domain,
+            service,
+            {"message": "Test Telegram Passato"},
+            blocking=True,
+        )
+
     if not hass.services.has_service(DOMAIN, "update_settings"):
         hass.services.async_register(DOMAIN, "update_settings", _handle_update_settings)
 
     if not hass.services.has_service(DOMAIN, "reset_mission"):
         hass.services.async_register(DOMAIN, "reset_mission", _handle_reset_mission)
+
+    if not hass.services.has_service(DOMAIN, "test_telegram"):
+        hass.services.async_register(DOMAIN, "test_telegram", _handle_test_telegram)
 
     async def _scheduled_update_check(now=None) -> None:
         await async_check_update(hass, data_dir)
