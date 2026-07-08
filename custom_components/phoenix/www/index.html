@@ -6,7 +6,7 @@
 <title>Phoenix AI Trader</title>
 <link rel="stylesheet" href="phoenix.css?v=041">
 <style>
-.actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap}.action-btn{border:1px solid rgba(56,189,248,.45);background:rgba(15,23,42,.92);color:#e0f2fe;border-radius:999px;padding:10px 14px;font-weight:900;text-decoration:none;cursor:pointer}.action-btn:hover{background:rgba(56,189,248,.18)}.action-btn.reset{border-color:rgba(245,158,11,.55);color:#fed7aa}.action-btn.settings{border-color:rgba(139,92,246,.55);color:#ddd6fe}.action-btn:disabled{opacity:.55;cursor:not-allowed}@media(max-width:700px){.actionbar{justify-content:stretch}.action-btn{width:100%;text-align:center}}
+.actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap}.action-btn{border:1px solid rgba(56,189,248,.45);background:rgba(15,23,42,.92);color:#e0f2fe;border-radius:999px;padding:10px 14px;font-weight:900;text-decoration:none;cursor:pointer}.action-btn:hover{background:rgba(56,189,248,.18)}.action-btn.reset{border-color:rgba(245,158,11,.55);color:#fed7aa}.action-btn.settings{border-color:rgba(139,92,246,.55);color:#ddd6fe}.action-btn:disabled{opacity:.55;cursor:not-allowed}.settings-panel{display:none;background:rgba(15,23,42,.96);border:1px solid rgba(139,92,246,.45);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 24px 90px rgba(0,0,0,.28)}.settings-panel.open{display:block}.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.settings-field label{display:block;color:#94a3b8;font-size:.85rem;margin:0 0 6px}.settings-field input,.settings-field select{width:100%;box-sizing:border-box;background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:12px;padding:10px}.settings-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}.settings-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.settings-title h2{margin:0}.muted{color:#94a3b8;font-size:.9rem}@media(max-width:900px){.settings-grid{grid-template-columns:1fr}}@media(max-width:700px){.actionbar{justify-content:stretch}.action-btn{width:100%;text-align:center}.settings-actions .action-btn{width:100%}}
 </style>
 </head>
 <body>
@@ -22,12 +22,43 @@
   <div class="notice paper">🧪 Modalità Paper Trading — simulazione virtuale, nessun acquisto reale viene eseguito.</div>
   <div class="actionbar">
     <button id="phoenixResetMissionBtn" class="action-btn reset" type="button">🔄 Reset missione</button>
-    <a class="action-btn settings" href="/config/integrations">⚙️ Impostazioni Phoenix</a>
+    <button id="phoenixOpenSettingsBtn" class="action-btn settings" type="button">⚙️ Impostazioni Phoenix</button>
   </div>
+
+  <section id="phoenixSettingsPanel" class="settings-panel">
+    <div class="settings-title">
+      <div>
+        <h2>⚙️ Impostazioni Phoenix</h2>
+        <p class="muted">Reimposta missione, capitale, notifiche e attivazione senza uscire dalla dashboard.</p>
+      </div>
+      <button id="phoenixCloseSettingsBtn" class="action-btn" type="button">✖ Chiudi</button>
+    </div>
+
+    <div class="settings-grid">
+      <div class="settings-field"><label>Capitale iniziale</label><input id="phoenixSetStartCapital" type="number" min="0" step="0.01"></div>
+      <div class="settings-field"><label>Obiettivo capitale</label><input id="phoenixSetTargetCapital" type="number" min="0" step="0.01"></div>
+      <div class="settings-field"><label>Durata</label><input id="phoenixSetDurationValue" type="number" min="1" step="1"></div>
+      <div class="settings-field"><label>Unità durata</label><select id="phoenixSetDurationUnit"><option value="hours">Ore</option><option value="days">Giorni</option><option value="weeks">Settimane</option><option value="months">Mesi</option><option value="years">Anni</option></select></div>
+      <div class="settings-field"><label>Email</label><input id="phoenixSetEmail" type="email" placeholder="utente@email.it"></div>
+      <div class="settings-field"><label>Codice attivazione</label><input id="phoenixSetActivationCode" type="text" placeholder="lascia vuoto per demo"></div>
+      <div class="settings-field"><label>Telegram attivo</label><select id="phoenixSetTelegramEnabled"><option value="false">No</option><option value="true">Sì</option></select></div>
+      <div class="settings-field"><label>Servizio Telegram</label><input id="phoenixSetTelegramService" type="text" placeholder="notify.telegram"></div>
+      <div class="settings-field"><label>Soglia €</label><input id="phoenixSetThresholdEur" type="number" min="0" step="0.01"></div>
+      <div class="settings-field"><label>Soglia %</label><input id="phoenixSetThresholdPercent" type="number" min="0" step="0.01"></div>
+      <div class="settings-field"><label>Cooldown notifiche ore</label><input id="phoenixSetCooldownHours" type="number" min="1" step="1"></div>
+    </div>
+
+    <div class="settings-actions">
+      <button id="phoenixSaveSettingsBtn" class="action-btn settings" type="button">💾 Salva impostazioni</button>
+      <button id="phoenixSaveAndResetBtn" class="action-btn reset" type="button">🔄 Salva e resetta missione</button>
+    </div>
+    <p id="phoenixSettingsStatus" class="muted"></p>
+  </section>
+
   <p id="status" class="status">Caricamento dati Phoenix...</p>
   <main id="app"></main>
 </div>
 <script src="phoenix.js?v=041"></script>
-<script src="phoenix-actions.js?v=001"></script>
+<script src="phoenix-actions.js?v=002"></script>
 </body>
 </html>
