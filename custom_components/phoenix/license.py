@@ -180,14 +180,16 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
             "demo_remaining_seconds": None,
             "demo_expires_at": settings.get("demo_expires_at"),
             "demo_duration_seconds": DEMO_DURATION_SECONDS,
+            "trial_lock_reason": None,
         }
 
-    started_at = settings.get("demo_started_at") or settings.get("created_at") or now_string()
-    expires = _demo_expires_at(started_at)
+    started_at = settings.get("trial_first_seen_at") or settings.get("demo_started_at") or settings.get("created_at") or now_string()
+    expires = parse_dt(settings.get("trial_expires_at") or settings.get("demo_expires_at")) or _demo_expires_at(started_at)
     remaining = int((expires - datetime.now()).total_seconds())
     status = LICENSE_STATUS_INVALID if license_key else LICENSE_STATUS_DEMO
+    force_expired = bool(settings.get("demo_force_expired") or settings.get("trial_expired"))
 
-    if remaining <= 0:
+    if force_expired or remaining <= 0:
         return {
             "license_status": LICENSE_STATUS_INVALID if license_key else LICENSE_STATUS_EXPIRED,
             "licensed": False,
@@ -195,6 +197,7 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
             "demo_remaining_seconds": 0,
             "demo_expires_at": expires.strftime("%Y-%m-%d %H:%M:%S"),
             "demo_duration_seconds": DEMO_DURATION_SECONDS,
+            "trial_lock_reason": settings.get("trial_lock_reason") or "trial_expired",
         }
 
     return {
@@ -204,4 +207,5 @@ def evaluate_license(settings: dict[str, Any]) -> dict[str, Any]:
         "demo_remaining_seconds": remaining,
         "demo_expires_at": expires.strftime("%Y-%m-%d %H:%M:%S"),
         "demo_duration_seconds": DEMO_DURATION_SECONDS,
+        "trial_lock_reason": None,
     }
