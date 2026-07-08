@@ -152,6 +152,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
 
         service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
+        telegram_chat_id = str(settings.get("telegram_chat_id", "")).strip()
         if not service_name or "." not in service_name:
             _LOGGER.warning("Phoenix Telegram service is invalid: %s", service_name)
             return
@@ -190,11 +191,15 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Investito: {invested:.2f} EUR"
         )
 
+        service_data = {"message": message}
+        if telegram_chat_id:
+            service_data["target"] = telegram_chat_id
+
         try:
             await self.hass.services.async_call(
                 domain,
                 service,
-                {"message": message},
+                service_data,
                 blocking=False,
             )
         except Exception:
