@@ -76,8 +76,6 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
     write_json(settings_path(data_dir), updated_settings)
 
     if mission_changed:
-        # A new mission must become the new baseline immediately.
-        # Otherwise the page reloads and normalize_accounting recalculates from old liquidity/positions.
         base_status = {
             **status,
             "version": PHOENIX_VERSION,
@@ -139,7 +137,7 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
             },
         }
 
-    updated_status = normalize_accounting({**base_status, **_license_overlay(updated_settings)})
+    updated_status = normalize_accounting({**base_status, **_license_overlay(data_dir, updated_settings)})
     write_json(status_path(data_dir), updated_status)
     return updated_status
 
@@ -211,7 +209,7 @@ def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[s
         },
     }
 
-    normalized = normalize_accounting({**reset_status, **_license_overlay(updated_settings)})
+    normalized = normalize_accounting({**reset_status, **_license_overlay(data_dir, updated_settings)})
     write_json(status_path(data_dir), normalized)
     write_json(history_path(data_dir), [])
     write_json(trades_path(data_dir), [])
