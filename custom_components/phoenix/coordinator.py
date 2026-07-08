@@ -88,10 +88,10 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         status = await self.hass.async_add_executor_job(read_json, status_path(self.data_dir), {})
         updated_status, event = maybe_open_paper_position({**status, **data}, settings)
+        await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), updated_status)
         if event is None:
             return
 
-        await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), updated_status)
         trades = await self.hass.async_add_executor_job(read_json, trades_path(self.data_dir), [])
         if not isinstance(trades, list):
             trades = []
