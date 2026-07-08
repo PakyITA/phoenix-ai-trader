@@ -42,6 +42,7 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
     duration_unit = str(payload.get("duration_unit") or settings.get("duration_unit") or "days")
     email = str(payload.get("email") if payload.get("email") is not None else settings.get("email", "")).strip()
     activation_code = str(payload.get("activation_code") or settings.get("license_key", "")).strip()
+    telegram_chat_id = str(payload.get("telegram_chat_id") if payload.get("telegram_chat_id") is not None else settings.get("telegram_chat_id", "")).strip()
 
     mission = status.get("mission") if isinstance(status.get("mission"), dict) else {}
     mission_changed = (
@@ -68,6 +69,7 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
         "license_key": activation_code,
         "telegram_enabled": bool(payload.get("telegram_enabled", settings.get("telegram_enabled", False))),
         "telegram_service": str(payload.get("telegram_service") or settings.get("telegram_service") or "notify.telegram").strip(),
+        "telegram_chat_id": telegram_chat_id,
         "alert_threshold_eur": _float(payload.get("alert_threshold_eur"), _float(settings.get("alert_threshold_eur"), 10.0)),
         "alert_threshold_percent": _float(payload.get("alert_threshold_percent"), _float(settings.get("alert_threshold_percent"), 1.0)),
         "alert_cooldown_hours": _int(payload.get("alert_cooldown_hours"), _int(settings.get("alert_cooldown_hours"), 24)),
