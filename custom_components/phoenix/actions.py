@@ -3,7 +3,17 @@ from __future__ import annotations
 from typing import Any
 
 from .accounting import normalize_accounting
-from .storage import PHOENIX_VERSION, _license_overlay, now_string, read_json, settings_path, status_path, write_json
+from .storage import (
+    PHOENIX_VERSION,
+    _license_overlay,
+    history_path,
+    now_string,
+    read_json,
+    settings_path,
+    status_path,
+    trades_path,
+    write_json,
+)
 
 
 def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -23,6 +33,9 @@ def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[s
         "target_capital": target_capital,
         "duration_value": duration_value,
         "duration_unit": duration_unit,
+        "last_alert_at": None,
+        "last_alert_direction": None,
+        "last_alert_value": None,
     }
     write_json(settings_path(data_dir), updated_settings)
 
@@ -34,6 +47,16 @@ def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[s
         "scanned_count": 0,
         "start_balance": start_capital,
         "balance": start_capital,
+        "invested_amount": 0.0,
+        "open_value": 0.0,
+        "unrealized_pnl": 0.0,
+        "unrealized_pnl_percent": 0.0,
+        "equity": start_capital,
+        "total_profit": 0.0,
+        "total_profit_percent": 0.0,
+        "target_capital": target_capital,
+        "target_distance": max(0.0, target_capital - start_capital),
+        "target_progress_percent": 0.0,
         "closed_profit": 0.0,
         "max_profit": 0.0,
         "max_loss": 0.0,
@@ -62,4 +85,6 @@ def reset_mission(data_dir: str, config: dict[str, Any] | None = None) -> dict[s
 
     normalized = normalize_accounting({**reset_status, **_license_overlay(updated_settings)})
     write_json(status_path(data_dir), normalized)
+    write_json(history_path(data_dir), [])
+    write_json(trades_path(data_dir), [])
     return normalized
