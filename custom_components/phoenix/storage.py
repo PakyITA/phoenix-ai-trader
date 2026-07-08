@@ -23,6 +23,7 @@ from .trial_guard import ensure_trial_guard
 
 PHOENIX_VERSION = "0.4.0"
 PUBLIC_STATUS_DIR = "/config/www/phoenix-ai-trader-ha"
+PUBLIC_STATUS_ALIASES = {STATUS_FILENAME, "status.json"}
 
 
 def now_string() -> str:
@@ -80,9 +81,10 @@ def _mirror_public_status(path: str, payload: Any) -> None:
         return
     try:
         os.makedirs(PUBLIC_STATUS_DIR, exist_ok=True)
-        public_path = os.path.join(PUBLIC_STATUS_DIR, STATUS_FILENAME)
-        with open(public_path, "w", encoding="utf-8") as file:
-            json.dump(payload, file, indent=2, ensure_ascii=False)
+        for filename in PUBLIC_STATUS_ALIASES:
+            public_path = os.path.join(PUBLIC_STATUS_DIR, filename)
+            with open(public_path, "w", encoding="utf-8") as file:
+                json.dump(payload, file, indent=2, ensure_ascii=False)
     except OSError:
         pass
 
