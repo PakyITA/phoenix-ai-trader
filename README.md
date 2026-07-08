@@ -381,6 +381,26 @@ Everything is simulated locally inside Home Assistant.
 
 ---
 
+## ⚠️ Financial Disclaimer and User Responsibility
+
+Phoenix AI Trader is a **simulation, study and Paper Trading tool**. It is not a financial advisor, does not provide investment recommendations and does not guarantee any financial result.
+
+All information, scores, Telegram alerts, simulations and data displayed by Phoenix are provided only for educational and informational purposes.
+
+The author is not responsible for:
+
+- real financial losses
+- investment decisions made by the user
+- improper use of the software
+- incorrect interpretation of the data
+- direct or indirect damages resulting from the use of Phoenix
+
+The user is solely responsible for their own financial decisions. Any real market operation must be carried out responsibly, consciously and, when appropriate, with the support of a qualified professional.
+
+Phoenix AI Trader **does not execute real trades**, **does not manage real funds** and **must not be used as a substitute for professional financial advice**.
+
+---
+
 ## 💬 Support
 
 | | |
