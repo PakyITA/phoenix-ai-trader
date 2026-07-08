@@ -10,12 +10,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from .scanner import build_crypto_scan
 from .storage import PHOENIX_VERSION, read_settings, read_status, update_settings
 
 _LOGGER = logging.getLogger(__name__)
 
 GITHUB_MANIFEST_URL = "https://raw.githubusercontent.com/PakyITA/phoenix-ai-trader/main/custom_components/phoenix/manifest.json"
 UPDATE_CHECK_INTERVAL_MINUTES = 5
+SCAN_INTERVAL_SECONDS = 60
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -52,10 +54,27 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         data = await self.hass.async_add_executor_job(read_status, self.data_dir)
+        if not data.get("locked") and not data.get("demo_expired"):
+            await self._maybe_run_scanner(data)
+            data = await self.hass.async_add_executor_job(read_status, self.data_dir)
         await self._maybe_notify_demo_end(data)
         await self._maybe_notify_update_available()
         await self._maybe_send_telegram_alert(data)
         return data
+
+    async def _maybe_run_scanner(self, data: dict[str, Any]) -> None:
+        last_scan = _parse_dt(data.get("last_scan_at"))
+        if last_scan and datetime.now() - last_scan < timedelta(seconds=SCAN_INTERVAL_SECONDS):
+            return
+
+        scan_payload = build_crypto_scan(data)
+        scan_payload["last_scan_at"] = _now_string()
+        await self.hass.async_add_executor_job(update_settings, self.data_dir, {"last_scan_at": scan_payload["last_scan_at"]})
+        from .storage import read_json, status_path, write_json
+
+        status = await self.hass.async_add_executor_job(read_json, status_path(self.data_dir), {})
+        status.update(scan_payload)
+        await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), status)
 
     async def _maybe_notify_demo_end(self, data: dict[str, Any]) -> None:
         if not data.get("demo_expired") and not data.get("locked"):
