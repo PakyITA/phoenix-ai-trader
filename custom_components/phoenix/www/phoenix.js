@@ -22,6 +22,10 @@ const app = document.getElementById("app");
 const statusEl = document.getElementById("status");
 const pill = document.getElementById("licensePill");
 
+function clamp(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, Number(value || 0)));
+}
+
 function remainingText(seconds) {
   if (seconds === null || seconds === undefined) return "";
   const safe = Math.max(0, Number(seconds || 0));
@@ -50,6 +54,60 @@ function coinHtml(symbol) {
   const ticker = baseSymbol(symbol);
   const [name, logo] = COINS[ticker] || [ticker || "N/D", "🪙"];
   return `<div class="coin"><span class="logo">${logo}</span><div><div class="coin-name">${name}</div><div class="ticker">${ticker} · ${symbol || "N/D"}</div></div></div>`;
+}
+
+function parsePhoenixDate(value) {
+  if (!value) return null;
+  const normalized = String(value).replace(" ", "T");
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function addMissionDuration(startDate, value, unit) {
+  const end = new Date(startDate.getTime());
+  const amount = Number(value || 0);
+  if (unit === "hours") end.setHours(end.getHours() + amount);
+  else if (unit === "weeks") end.setDate(end.getDate() + amount * 7);
+  else if (unit === "months") end.setMonth(end.getMonth() + amount);
+  else if (unit === "years") end.setFullYear(end.getFullYear() + amount);
+  else end.setDate(end.getDate() + amount);
+  return end;
+}
+
+function missionTimeProgress(data) {
+  const mission = data.mission || {};
+  const start = parsePhoenixDate(mission.start_date || data.created_at);
+  const durationValue = Number(mission.duration_value || data.duration_value || 0);
+  const durationUnit = mission.duration_unit || data.duration_unit || "days";
+  if (!start || durationValue <= 0) return { percent: 0, label: "durata non disponibile" };
+
+  const end = addMissionDuration(start, durationValue, durationUnit);
+  const now = new Date();
+  const totalMs = end.getTime() - start.getTime();
+  const elapsedMs = now.getTime() - start.getTime();
+  if (totalMs <= 0) return { percent: 100, label: "missione conclusa" };
+
+  const percent = clamp((elapsedMs / totalMs) * 100);
+  const remainingMs = Math.max(0, end.getTime() - now.getTime());
+  const remainingHours = Math.floor(remainingMs / 3600000);
+  const remainingDays = Math.floor(remainingHours / 24);
+  const label = remainingDays > 0 ? `${remainingDays} giorni rimasti` : `${remainingHours} ore rimaste`;
+  return { percent, label };
+}
+
+function progressBar(title, percent, detail, icon = "📊") {
+  const safe = clamp(percent);
+  return `
+    <div style="margin:14px 0 18px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px">
+        <strong>${icon} ${title}</strong>
+        <span class="small">${safe.toFixed(1)}%</span>
+      </div>
+      <div style="height:14px;background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.28);border-radius:999px;overflow:hidden">
+        <div style="height:100%;width:${safe}%;background:linear-gradient(90deg,#38bdf8,#22c55e);border-radius:999px"></div>
+      </div>
+      <p class="small" style="margin:7px 0 0">${detail}</p>
+    </div>`;
 }
 
 function setPill(data) {
@@ -113,6 +171,20 @@ function renderLicensePanel(data) {
   ])}</div>`;
 }
 
+function renderMissionProgressPanel(data) {
+  const time = missionTimeProgress(data);
+  const capitalProgress = clamp(data.target_progress_percent);
+  const start = Number(data.start_balance || data.mission?.start_capital || 0);
+  const target = Number(data.target_capital || data.mission?.target_capital || 0);
+  const equity = Number(data.equity || 0);
+  const gained = Math.max(0, equity - start);
+  const needed = Math.max(0, target - start);
+  return `<div class="card full"><h2>🎯 Avanzamento missione</h2>
+    ${progressBar("Tempo missione", time.percent, time.label, "⏱️")}
+    ${progressBar("Capitale verso obiettivo", capitalProgress, `${money(gained)} guadagnati su ${money(needed)} necessari · Target ${money(target)}`, "💰")}
+  </div>`;
+}
+
 function renderPaperTraderPanel(data) {
   const status = data.paper_trader_status || "in attesa setup";
   const lastTrade = data.last_trade || "Nessuna operazione virtuale ancora aperta";
@@ -142,6 +214,7 @@ function renderDashboard(data) {
       ${card("Win rate", pct(data.win_rate), "accent")}
       ${card("Trade aperti", data.open_positions || 0, "accent")}
       ${card("Demo/Licenza", data.license_status === "active" ? "Licenza attiva" : remainingText(data.demo_remaining_seconds), data.license_status === "active" ? "good" : "warn")}
+      ${renderMissionProgressPanel(data)}
       <div class="card wide"><h2>💼 Contabilità</h2>${rows([
         ["Valore posizioni", money(data.open_value)],
         ["Profitto chiuso", money(data.closed_profit)],
