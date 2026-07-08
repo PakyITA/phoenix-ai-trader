@@ -43,6 +43,14 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
     email = str(payload.get("email") if payload.get("email") is not None else settings.get("email", "")).strip()
     activation_code = str(payload.get("activation_code") or settings.get("license_key", "")).strip()
 
+    mission = status.get("mission") if isinstance(status.get("mission"), dict) else {}
+    mission_changed = (
+        _float(settings.get("start_capital"), start_capital) != start_capital
+        or _float(settings.get("target_capital"), target_capital) != target_capital
+        or _int(settings.get("duration_value"), duration_value) != duration_value
+        or str(settings.get("duration_unit") or duration_unit) != duration_unit
+    )
+
     license_payload = build_license_payload(
         email=email,
         license_key=activation_code,
@@ -67,22 +75,71 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
     }
     write_json(settings_path(data_dir), updated_settings)
 
-    mission = status.get("mission") if isinstance(status.get("mission"), dict) else {}
-    updated_status = normalize_accounting({
-        **status,
-        "version": PHOENIX_VERSION,
-        "last_update": now,
-        "start_balance": start_capital,
-        "target_capital": target_capital,
-        "mission": {
-            **mission,
-            "start_capital": start_capital,
+    if mission_changed:
+        # A new mission must become the new baseline immediately.
+        # Otherwise the page reloads and normalize_accounting recalculates from old liquidity/positions.
+        base_status = {
+            **status,
+            "version": PHOENIX_VERSION,
+            "paper_trading": True,
+            "last_update": now,
+            "scanned_count": 0,
+            "start_balance": start_capital,
+            "balance": start_capital,
+            "invested_amount": 0.0,
+            "open_value": 0.0,
+            "unrealized_pnl": 0.0,
+            "unrealized_pnl_percent": 0.0,
+            "equity": start_capital,
+            "total_profit": 0.0,
+            "total_profit_percent": 0.0,
             "target_capital": target_capital,
-            "duration_value": duration_value,
-            "duration_unit": duration_unit,
-        },
-        **_license_overlay(updated_settings),
-    })
+            "target_distance": max(0.0, target_capital - start_capital),
+            "target_progress_percent": 0.0,
+            "closed_profit": 0.0,
+            "max_profit": 0.0,
+            "max_loss": 0.0,
+            "closed_trades": 0,
+            "wins": 0,
+            "losses": 0,
+            "win_rate": 0.0,
+            "top_crypto": "N/D",
+            "top_score": 0,
+            "top_confidence": "N/D",
+            "top_quality": "N/D",
+            "market_risk": "N/D",
+            "last_trade": "N/D",
+            "best_trade": "N/D",
+            "worst_trade": "N/D",
+            "positions": [],
+            "top20": [],
+            "mission": {
+                "start_capital": start_capital,
+                "target_capital": target_capital,
+                "duration_value": duration_value,
+                "duration_unit": duration_unit,
+                "start_date": now,
+            },
+        }
+        write_json(history_path(data_dir), [])
+        write_json(trades_path(data_dir), [])
+    else:
+        base_status = {
+            **status,
+            "version": PHOENIX_VERSION,
+            "last_update": now,
+            "start_balance": start_capital,
+            "target_capital": target_capital,
+            "mission": {
+                **mission,
+                "start_capital": start_capital,
+                "target_capital": target_capital,
+                "duration_value": duration_value,
+                "duration_unit": duration_unit,
+            },
+        }
+
+    updated_status = normalize_accounting({**base_status, **_license_overlay(updated_settings)})
     write_json(status_path(data_dir), updated_status)
     return updated_status
 
