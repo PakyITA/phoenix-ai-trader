@@ -6,15 +6,192 @@ const STATUS_URLS = [
 
 const CONTACT_EMAIL = "pasquale.play4@gmail.com";
 const PAYPAL_LINK = "https://paypal.me/PakyDJ/9.99EUR";
-const PAYPAL_TEXT = "Acquista licenza 9,99 €";
+const PAYPAL_TEXT_IT = "Acquista licenza 9,99 €";
+const PAYPAL_TEXT_EN = "Buy license €9.99";
+const LANG_KEY = "phoenixAiTraderLanguage";
+let currentLang = localStorage.getItem(LANG_KEY) || "it";
+let lastData = null;
 
-const COINS = {
-  BTC: ["Bitcoin", "₿"], ETH: ["Ethereum", "◆"], SOL: ["Solana", "◎"],
-  BNB: ["BNB", "🟡"], XRP: ["XRP", "✕"], ADA: ["Cardano", "₳"],
-  DOGE: ["Dogecoin", "Ð"], AVAX: ["Avalanche", "🔺"], LINK: ["Chainlink", "🔗"],
-  DOT: ["Polkadot", "●"], LTC: ["Litecoin", "Ł"], MATIC: ["Polygon", "⬡"], POL: ["Polygon", "⬡"]
+const I18N = {
+  it: {
+    heroSubtitle: "Paper Trading con AI per Home Assistant",
+    paperNotice: "🧪 Modalità Paper Trading — simulazione virtuale, nessun acquisto reale viene eseguito.",
+    loading: "Caricamento dati Phoenix...",
+    online: "Online",
+    lastUpdate: "ultimo update",
+    licenseActive: "Licenza attiva",
+    demoExpired: "Demo scaduta",
+    demo: "Demo",
+    dataUnavailable: "Dati non disponibili",
+    unableToRead: "🔴 Impossibile leggere i dati Phoenix",
+    dataCheck: "Controlla che i file dati Phoenix siano raggiungibili da Home Assistant.",
+    resetMission: "🔄 Reset missione",
+    settings: "⚙️ Impostazioni Phoenix",
+    insertLicense: "🔑 Inserisci licenza",
+    updateLicense: "🔁 Aggiorna licenza",
+    equity: "Equity",
+    balance: "Liquidità",
+    invested: "Investito",
+    openPL: "P/L aperto",
+    totalProfit: "Profitto totale",
+    winRate: "Win rate",
+    openTrades: "Trade aperti",
+    demoLicense: "Demo/Licenza",
+    accounting: "💼 Contabilità",
+    openValue: "Valore posizioni",
+    closedProfit: "Profitto chiuso",
+    closedTrades: "Trade chiusi",
+    licenseStatus: "Stato licenza",
+    telegram: "Telegram",
+    active: "Attivo",
+    inactive: "Non attivo",
+    license: "🔐 Licenza",
+    status: "Stato",
+    email: "Email associata",
+    licenseExpiry: "Scadenza licenza",
+    demoExpiry: "Scadenza demo",
+    plan: "Piano",
+    action: "Azione",
+    missionProgress: "🎯 Avanzamento missione",
+    missionTime: "Tempo missione",
+    capitalTarget: "Capitale verso obiettivo",
+    unavailableDuration: "durata non disponibile",
+    missionEnded: "missione conclusa",
+    daysLeft: "giorni rimasti",
+    hoursLeft: "ore rimaste",
+    gainedOnNeeded: (gained, needed, target) => `${gained} guadagnati su ${needed} necessari · Target ${target}`,
+    phoenixRole: "🤖 Ruolo Phoenix",
+    roleText: "Phoenix analizza il mercato crypto, apre posizioni virtuali automatiche e ti mostra se la strategia sta performando, prima di rischiare denaro reale.",
+    mode: "Modalità",
+    autoPaperTrader: "Paper Trader automatico",
+    support: "Supporto",
+    supportText: "privato e autonomo alla valutazione della strategia",
+    waitingSetup: "in attesa setup",
+    rule: "Regola",
+    ruleText: score => `apre posizioni virtuali con score ≥ ${score}`,
+    capitalPerTrade: "Capitale per trade",
+    liquidityPercent: percent => `${percent}% della liquidità disponibile`,
+    lastOperation: "Ultima operazione",
+    noVirtualOperation: "Nessuna operazione virtuale ancora aperta",
+    safety: "Sicurezza",
+    noRealOrder: "nessun ordine reale eseguito",
+    topSetup: "🏆 Top setup",
+    coin: "Moneta",
+    confidence: "Confidenza",
+    quality: "Qualità",
+    openPositions: "📈 Posizioni aperte",
+    noPositions: "Nessuna posizione aperta.",
+    amount: "Investito",
+    value: "Valore",
+    topMarket: "🔥 Top 20 mercato",
+    noMarketData: "Nessun dato mercato disponibile.",
+    lockedTitle: "⛔ Demo gratuita terminata",
+    lockedIntro: "La prova gratuita di 24 ore è terminata. Per continuare a usare Phoenix AI Trader devi acquistare e inserire una licenza personale annuale.",
+    launchOffer: "🔑 Offerta lancio 9,99 € · poi 19,99 €/anno",
+    unlockedFeatures: "Con la licenza attiva sblocchi dashboard, sensori, Top 20 mercato, monitoraggio P/L e alert Telegram.",
+    step1: "1. Acquista",
+    step1Text: "Paga con PayPal usando l'offerta lancio.",
+    step2: "2. Ricevi codice",
+    step2Text: "La licenza firmata viene inviata via email.",
+    step3: "3. Inserisci licenza",
+    step3Text: "Apri Impostazioni Phoenix e incolla il codice.",
+    currentState: "Stato attuale",
+    configuredEmail: "Email configurata",
+    paidRequest: "📩 Ho pagato, richiedo licenza",
+    disclaimer: "⚠️ Phoenix è un supporto privato e autonomo alla valutazione di strategie in Paper Trading. Non fornisce consulenza finanziaria e non garantisce guadagni. Ogni decisione economica resta sotto responsabilità dell'utente.",
+    notSet: "non impostata"
+  },
+  en: {
+    heroSubtitle: "AI Paper Trading for Home Assistant",
+    paperNotice: "🧪 Paper Trading mode — virtual simulation, no real purchase is executed.",
+    loading: "Loading Phoenix data...",
+    online: "Online",
+    lastUpdate: "last update",
+    licenseActive: "License active",
+    demoExpired: "Demo expired",
+    demo: "Demo",
+    dataUnavailable: "Data unavailable",
+    unableToRead: "🔴 Unable to read Phoenix data",
+    dataCheck: "Check that Phoenix data files are reachable from Home Assistant.",
+    resetMission: "🔄 Reset mission",
+    settings: "⚙️ Phoenix settings",
+    insertLicense: "🔑 Enter license",
+    updateLicense: "🔁 Update license",
+    equity: "Equity",
+    balance: "Balance",
+    invested: "Invested",
+    openPL: "Open P/L",
+    totalProfit: "Total profit",
+    winRate: "Win rate",
+    openTrades: "Open trades",
+    demoLicense: "Demo/License",
+    accounting: "💼 Accounting",
+    openValue: "Position value",
+    closedProfit: "Closed profit",
+    closedTrades: "Closed trades",
+    licenseStatus: "License status",
+    telegram: "Telegram",
+    active: "Active",
+    inactive: "Inactive",
+    license: "🔐 License",
+    status: "Status",
+    email: "Associated email",
+    licenseExpiry: "License expiry",
+    demoExpiry: "Demo expiry",
+    plan: "Plan",
+    action: "Action",
+    missionProgress: "🎯 Mission progress",
+    missionTime: "Mission time",
+    capitalTarget: "Capital toward target",
+    unavailableDuration: "duration unavailable",
+    missionEnded: "mission completed",
+    daysLeft: "days left",
+    hoursLeft: "hours left",
+    gainedOnNeeded: (gained, needed, target) => `${gained} gained out of ${needed} needed · Target ${target}`,
+    phoenixRole: "🤖 Phoenix role",
+    roleText: "Phoenix analyzes the crypto market, opens automatic virtual positions and shows whether the strategy is performing before risking real money.",
+    mode: "Mode",
+    autoPaperTrader: "Automatic Paper Trader",
+    support: "Support",
+    supportText: "private and autonomous strategy evaluation",
+    waitingSetup: "waiting for setup",
+    rule: "Rule",
+    ruleText: score => `opens virtual positions with score ≥ ${score}`,
+    capitalPerTrade: "Capital per trade",
+    liquidityPercent: percent => `${percent}% of available liquidity`,
+    lastOperation: "Last operation",
+    noVirtualOperation: "No virtual operation opened yet",
+    safety: "Safety",
+    noRealOrder: "no real order executed",
+    topSetup: "🏆 Top setup",
+    coin: "Coin",
+    confidence: "Confidence",
+    quality: "Quality",
+    openPositions: "📈 Open positions",
+    noPositions: "No open position.",
+    amount: "Invested",
+    value: "Value",
+    topMarket: "🔥 Market Top 20",
+    noMarketData: "No market data available.",
+    lockedTitle: "⛔ Free demo ended",
+    lockedIntro: "The 24-hour free trial has ended. To keep using Phoenix AI Trader, purchase and enter a personal annual license.",
+    launchOffer: "🔑 Launch offer €9.99 · then €19.99/year",
+    unlockedFeatures: "With an active license you unlock dashboard, sensors, Market Top 20, P/L monitoring and Telegram alerts.",
+    step1: "1. Buy",
+    step1Text: "Pay with PayPal using the launch offer.",
+    step2: "2. Receive code",
+    step2Text: "The signed license is sent by email.",
+    step3: "3. Enter license",
+    step3Text: "Open Phoenix settings and paste the code.",
+    currentState: "Current status",
+    configuredEmail: "Configured email",
+    paidRequest: "📩 I paid, request license",
+    disclaimer: "⚠️ Phoenix is a private and autonomous support tool for evaluating Paper Trading strategies. It is not financial advice and does not guarantee profits. Every financial decision remains the user's responsibility.",
+    notSet: "not set"
+  }
 };
 
+const t = key => I18N[currentLang][key] ?? I18N.it[key] ?? key;
 const money = value => `${Number(value || 0).toFixed(2)} €`;
 const pct = value => `${Number(value || 0).toFixed(2)}%`;
 const cls = value => Number(value || 0) >= 0 ? "good" : "bad";
@@ -24,6 +201,33 @@ const pill = document.getElementById("licensePill");
 
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, Number(value || 0)));
+}
+
+function updateStaticText() {
+  document.documentElement.lang = currentLang === "en" ? "en" : "it";
+  const hero = document.getElementById("phoenixHeroSubtitle");
+  const notice = document.getElementById("phoenixPaperNotice");
+  const reset = document.getElementById("phoenixResetMissionBtn");
+  const settings = document.getElementById("phoenixOpenSettingsBtn");
+  const langIt = document.getElementById("phoenixLangIt");
+  const langEn = document.getElementById("phoenixLangEn");
+  if (hero) hero.textContent = t("heroSubtitle");
+  if (notice) notice.textContent = t("paperNotice");
+  if (reset) reset.textContent = t("resetMission");
+  if (settings) settings.textContent = t("settings");
+  if (statusEl && !lastData) statusEl.textContent = t("loading");
+  if (langIt) langIt.classList.toggle("active", currentLang === "it");
+  if (langEn) langEn.classList.toggle("active", currentLang === "en");
+}
+
+function setLanguage(lang) {
+  currentLang = lang === "en" ? "en" : "it";
+  localStorage.setItem(LANG_KEY, currentLang);
+  updateStaticText();
+  if (lastData) {
+    setPill(lastData);
+    renderDashboardOrLocked(lastData);
+  }
 }
 
 function remainingText(seconds) {
@@ -39,10 +243,10 @@ function licenseExpiryText(data) {
 }
 
 function licenseEmailText(data) {
-  return data.email || "non impostata";
+  return data.email || t("notSet");
 }
 
-function insertLicenseButton(label = "🔑 Inserisci licenza") {
+function insertLicenseButton(label = t("insertLicense")) {
   return `<button class="btn" type="button" onclick="window.phoenixOpenSettings ? window.phoenixOpenSettings() : document.getElementById('phoenixOpenSettingsBtn')?.click()">${label}</button>`;
 }
 
@@ -79,19 +283,19 @@ function missionTimeProgress(data) {
   const start = parsePhoenixDate(mission.start_date || data.created_at);
   const durationValue = Number(mission.duration_value || data.duration_value || 0);
   const durationUnit = mission.duration_unit || data.duration_unit || "days";
-  if (!start || durationValue <= 0) return { percent: 0, label: "durata non disponibile" };
+  if (!start || durationValue <= 0) return { percent: 0, label: t("unavailableDuration") };
 
   const end = addMissionDuration(start, durationValue, durationUnit);
   const now = new Date();
   const totalMs = end.getTime() - start.getTime();
   const elapsedMs = now.getTime() - start.getTime();
-  if (totalMs <= 0) return { percent: 100, label: "missione conclusa" };
+  if (totalMs <= 0) return { percent: 100, label: t("missionEnded") };
 
   const percent = clamp((elapsedMs / totalMs) * 100);
   const remainingMs = Math.max(0, end.getTime() - now.getTime());
   const remainingHours = Math.floor(remainingMs / 3600000);
   const remainingDays = Math.floor(remainingHours / 24);
-  const label = remainingDays > 0 ? `${remainingDays} giorni rimasti` : `${remainingHours} ore rimaste`;
+  const label = remainingDays > 0 ? `${remainingDays} ${t("daysLeft")}` : `${remainingHours} ${t("hoursLeft")}`;
   return { percent, label };
 }
 
@@ -113,16 +317,16 @@ function progressBar(title, percent, detail, icon = "📊") {
 function setPill(data) {
   if (data.license_status === "active") {
     pill.className = "pill active";
-    pill.textContent = "✅ Licenza attiva";
+    pill.textContent = `✅ ${t("licenseActive")}`;
     return;
   }
   if (data.locked || data.demo_expired || ["expired", "invalid"].includes(data.license_status)) {
     pill.className = "pill expired";
-    pill.textContent = "⛔ Demo scaduta";
+    pill.textContent = `⛔ ${t("demoExpired")}`;
     return;
   }
   pill.className = "pill trial";
-  pill.textContent = `⏳ Demo ${remainingText(data.demo_remaining_seconds)}`;
+  pill.textContent = `⏳ ${t("demo")} ${remainingText(data.demo_remaining_seconds)}`;
 }
 
 function card(label, value, css = "accent") {
@@ -134,40 +338,40 @@ function rows(items) {
 }
 
 function renderLocked(data) {
-  const subject = encodeURIComponent("Licenza Phoenix AI Trader");
-  const body = encodeURIComponent(`Ciao, ho acquistato la licenza Phoenix AI Trader da PayPal.\n\nEmail Home Assistant/PayPal: ${data.email || ""}\nStato licenza: ${data.license_status || "expired"}`);
+  const subject = encodeURIComponent("Phoenix AI Trader License");
+  const body = encodeURIComponent(`Hello, I purchased the Phoenix AI Trader license with PayPal.\n\nHome Assistant/PayPal email: ${data.email || ""}\nLicense status: ${data.license_status || "expired"}`);
   app.innerHTML = `
     <section class="locked">
       <div class="locked-box">
-        <h2>⛔ Demo gratuita terminata</h2>
-        <p><b>La prova gratuita di 24 ore è terminata.</b> Per continuare a usare Phoenix AI Trader devi acquistare e inserire una licenza personale annuale.</p>
-        <div class="license-badge">🔑 Offerta lancio 9,99 € · poi 19,99 €/anno</div>
-        <p>Phoenix analizza il mercato crypto, apre posizioni virtuali automatiche e ti mostra se la strategia sta performando, prima di rischiare denaro reale.</p>
-        <p>Con la licenza attiva sblocchi dashboard, sensori, Top 20 mercato, monitoraggio P/L e alert Telegram.</p>
+        <h2>${t("lockedTitle")}</h2>
+        <p><b>${t("lockedIntro")}</b></p>
+        <div class="license-badge">${t("launchOffer")}</div>
+        <p>${t("roleText")}</p>
+        <p>${t("unlockedFeatures")}</p>
         <div class="steps">
-          <div class="step"><b>1. Acquista</b><br><span class="small">Paga con PayPal usando l'offerta lancio.</span></div>
-          <div class="step"><b>2. Ricevi codice</b><br><span class="small">La licenza firmata viene inviata via email.</span></div>
-          <div class="step"><b>3. Inserisci licenza</b><br><span class="small">Apri Impostazioni Phoenix e incolla il codice.</span></div>
+          <div class="step"><b>${t("step1")}</b><br><span class="small">${t("step1Text")}</span></div>
+          <div class="step"><b>${t("step2")}</b><br><span class="small">${t("step2Text")}</span></div>
+          <div class="step"><b>${t("step3")}</b><br><span class="small">${t("step3Text")}</span></div>
         </div>
-        <p class="small">Stato attuale: ${data.license_status || "expired"} · Email configurata: ${licenseEmailText(data)} · Scadenza demo: ${data.demo_expires_at || "N/D"}</p>
-        <a class="btn btn-pay" href="${PAYPAL_LINK}" target="_blank" rel="noopener">💳 ${PAYPAL_TEXT}</a>
+        <p class="small">${t("currentState")}: ${data.license_status || "expired"} · ${t("configuredEmail")}: ${licenseEmailText(data)} · ${t("demoExpiry")}: ${data.demo_expires_at || "N/D"}</p>
+        <a class="btn btn-pay" href="${PAYPAL_LINK}" target="_blank" rel="noopener">💳 ${currentLang === "en" ? PAYPAL_TEXT_EN : PAYPAL_TEXT_IT}</a>
         ${insertLicenseButton()}
-        <a class="btn" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">📩 Ho pagato, richiedo licenza</a>
-        <p class="small">⚠️ Phoenix è un supporto privato e autonomo alla valutazione di strategie in Paper Trading. Non fornisce consulenza finanziaria e non garantisce guadagni. Ogni decisione economica resta sotto responsabilità dell'utente.</p>
+        <a class="btn" href="mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}">${t("paidRequest")}</a>
+        <p class="small">${t("disclaimer")}</p>
       </div>
     </section>`;
 }
 
 function renderLicensePanel(data) {
   const active = data.license_status === "active";
-  const status = active ? "Attiva" : (data.demo_expired || data.locked ? "Demo scaduta" : "Demo attiva");
+  const status = active ? t("active") : (data.demo_expired || data.locked ? t("demoExpired") : `${t("demo")} ${t("active")}`);
   const css = active ? "good" : (data.demo_expired || data.locked ? "bad" : "warn");
-  return `<div class="card wide"><h2>🔐 Licenza</h2>${rows([
-    ["Stato", status, css],
-    ["Email associata", licenseEmailText(data)],
-    [active ? "Scadenza licenza" : "Scadenza demo", licenseExpiryText(data)],
-    ["Piano", data.license_plan || (active ? "Annual" : "Trial")],
-    ["Azione", insertLicenseButton(active ? "🔁 Aggiorna licenza" : "🔑 Inserisci licenza")]
+  return `<div class="card wide"><h2>${t("license")}</h2>${rows([
+    [t("status"), status, css],
+    [t("email"), licenseEmailText(data)],
+    [active ? t("licenseExpiry") : t("demoExpiry"), licenseExpiryText(data)],
+    [t("plan"), data.license_plan || (active ? "Annual" : "Trial")],
+    [t("action"), insertLicenseButton(active ? t("updateLicense") : t("insertLicense"))]
   ])}</div>`;
 }
 
@@ -179,25 +383,25 @@ function renderMissionProgressPanel(data) {
   const equity = Number(data.equity || 0);
   const gained = Math.max(0, equity - start);
   const needed = Math.max(0, target - start);
-  return `<div class="card full"><h2>🎯 Avanzamento missione</h2>
-    ${progressBar("Tempo missione", time.percent, time.label, "⏱️")}
-    ${progressBar("Capitale verso obiettivo", capitalProgress, `${money(gained)} guadagnati su ${money(needed)} necessari · Target ${money(target)}`, "💰")}
+  return `<div class="card full"><h2>${t("missionProgress")}</h2>
+    ${progressBar(t("missionTime"), time.percent, time.label, "⏱️")}
+    ${progressBar(t("capitalTarget"), capitalProgress, I18N[currentLang].gainedOnNeeded(money(gained), money(needed), money(target)), "💰")}
   </div>`;
 }
 
 function renderPaperTraderPanel(data) {
-  const status = data.paper_trader_status || "in attesa setup";
-  const lastTrade = data.last_trade || "Nessuna operazione virtuale ancora aperta";
-  const allocation = data.auto_trade_allocation_percent ? `${Number(data.auto_trade_allocation_percent).toFixed(0)}% della liquidità disponibile` : "25% della liquidità disponibile";
+  const status = data.paper_trader_status || t("waitingSetup");
+  const lastTrade = data.last_trade && data.last_trade !== "N/D" ? data.last_trade : t("noVirtualOperation");
+  const allocation = data.auto_trade_allocation_percent ? I18N[currentLang].liquidityPercent(Number(data.auto_trade_allocation_percent).toFixed(0)) : I18N[currentLang].liquidityPercent(25);
   const minScore = data.auto_trade_min_score || 80;
-  return `<div class="card wide"><h2>🤖 Ruolo Phoenix</h2><p class="small">Phoenix analizza il mercato crypto, apre posizioni virtuali automatiche e ti mostra se la strategia sta performando, prima di rischiare denaro reale.</p>${rows([
-    ["Modalità", "Paper Trader automatico", "good"],
-    ["Supporto", "privato e autonomo alla valutazione della strategia"],
-    ["Stato", status],
-    ["Regola", `apre posizioni virtuali con score ≥ ${minScore}`],
-    ["Capitale per trade", allocation],
-    ["Ultima operazione", lastTrade],
-    ["Sicurezza", "nessun ordine reale eseguito", "warn"]
+  return `<div class="card wide"><h2>${t("phoenixRole")}</h2><p class="small">${t("roleText")}</p>${rows([
+    [t("mode"), t("autoPaperTrader"), "good"],
+    [t("support"), t("supportText")],
+    [t("status"), status],
+    [t("rule"), I18N[currentLang].ruleText(minScore)],
+    [t("capitalPerTrade"), allocation],
+    [t("lastOperation"), lastTrade],
+    [t("safety"), t("noRealOrder"), "warn"]
   ])}</div>`;
 }
 
@@ -206,43 +410,43 @@ function renderDashboard(data) {
   const unrealized = Number(data.unrealized_pnl || 0);
   app.innerHTML = `
     <section class="grid">
-      ${card("Equity", money(data.equity), cls(profit))}
-      ${card("Liquidità", money(data.balance), "accent")}
-      ${card("Investito", money(data.invested_amount), "warn")}
-      ${card("P/L aperto", `${money(unrealized)} · ${pct(data.unrealized_pnl_percent)}`, cls(unrealized))}
-      ${card("Profitto totale", `${money(data.total_profit)} · ${pct(data.total_profit_percent)}`, cls(profit))}
-      ${card("Win rate", pct(data.win_rate), "accent")}
-      ${card("Trade aperti", data.open_positions || 0, "accent")}
-      ${card("Demo/Licenza", data.license_status === "active" ? "Licenza attiva" : remainingText(data.demo_remaining_seconds), data.license_status === "active" ? "good" : "warn")}
+      ${card(t("equity"), money(data.equity), cls(profit))}
+      ${card(t("balance"), money(data.balance), "accent")}
+      ${card(t("invested"), money(data.invested_amount), "warn")}
+      ${card(t("openPL"), `${money(unrealized)} · ${pct(data.unrealized_pnl_percent)}`, cls(unrealized))}
+      ${card(t("totalProfit"), `${money(data.total_profit)} · ${pct(data.total_profit_percent)}`, cls(profit))}
+      ${card(t("winRate"), pct(data.win_rate), "accent")}
+      ${card(t("openTrades"), data.open_positions || 0, "accent")}
+      ${card(t("demoLicense"), data.license_status === "active" ? t("licenseActive") : remainingText(data.demo_remaining_seconds), data.license_status === "active" ? "good" : "warn")}
       ${renderMissionProgressPanel(data)}
-      <div class="card wide"><h2>💼 Contabilità</h2>${rows([
-        ["Valore posizioni", money(data.open_value)],
-        ["Profitto chiuso", money(data.closed_profit)],
-        ["Trade chiusi", data.closed_trades || 0],
-        ["Stato licenza", data.license_status || "demo"],
-        ["Telegram", data.telegram_enabled ? "Attivo" : "Non attivo", data.telegram_enabled ? "good" : "warn"]
+      <div class="card wide"><h2>${t("accounting")}</h2>${rows([
+        [t("openValue"), money(data.open_value)],
+        [t("closedProfit"), money(data.closed_profit)],
+        [t("closedTrades"), data.closed_trades || 0],
+        [t("licenseStatus"), data.license_status || "demo"],
+        [t("telegram"), data.telegram_enabled ? t("active") : t("inactive"), data.telegram_enabled ? "good" : "warn"]
       ])}</div>
       ${renderPaperTraderPanel(data)}
       ${renderLicensePanel(data)}
-      <div class="card wide"><h2>🏆 Top setup</h2>${rows([
-        ["Moneta", coinHtml(data.top_crypto)],
+      <div class="card wide"><h2>${t("topSetup")}</h2>${rows([
+        [t("coin"), coinHtml(data.top_crypto)],
         ["Score", data.top_score ?? "--"],
-        ["Confidenza", data.top_confidence || "N/D"],
-        ["Qualità", data.top_quality || "N/D"]
+        [t("confidence"), data.top_confidence || "N/D"],
+        [t("quality"), data.top_quality || "N/D"]
       ])}</div>
-      <div class="card full"><h2>📈 Posizioni aperte</h2>${positionsTable(data.positions || [])}</div>
-      <div class="card full"><h2>🔥 Top 20 mercato</h2>${topTable(data.top20 || [])}</div>
+      <div class="card full"><h2>${t("openPositions")}</h2>${positionsTable(data.positions || [])}</div>
+      <div class="card full"><h2>${t("topMarket")}</h2>${topTable(data.top20 || [])}</div>
     </section>`;
 }
 
 function positionsTable(items) {
-  if (!items.length) return `<p class="small">Nessuna posizione aperta.</p>`;
-  return `<table><tr><th>Moneta</th><th>Investito</th><th>Valore</th><th>P/L</th><th>Score</th></tr>${items.map(item => `<tr><td>${coinHtml(item.symbol)}</td><td>${money(item.amount)}</td><td>${money(item.current_value)}</td><td class="${cls(item.pnl)}">${money(item.pnl)} · ${pct(item.change_percent)}</td><td>${item.score ?? "--"}</td></tr>`).join("")}</table>`;
+  if (!items.length) return `<p class="small">${t("noPositions")}</p>`;
+  return `<table><tr><th>${t("coin")}</th><th>${t("amount")}</th><th>${t("value")}</th><th>P/L</th><th>Score</th></tr>${items.map(item => `<tr><td>${coinHtml(item.symbol)}</td><td>${money(item.amount)}</td><td>${money(item.current_value)}</td><td class="${cls(item.pnl)}">${money(item.pnl)} · ${pct(item.change_percent)}</td><td>${item.score ?? "--"}</td></tr>`).join("")}</table>`;
 }
 
 function topTable(items) {
-  if (!items.length) return `<p class="small">Nessun dato mercato disponibile.</p>`;
-  return `<table><tr><th>#</th><th>Moneta</th><th>Score</th><th>Conf.</th><th>RSI</th><th>1h</th></tr>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${coinHtml(item.symbol)}</td><td>${item.score ?? "--"}</td><td>${item.confidence ?? "--"}</td><td>${item.rsi ?? "--"}</td><td class="${cls(item.change_1h)}">${pct(item.change_1h)}</td></tr>`).join("")}</table>`;
+  if (!items.length) return `<p class="small">${t("noMarketData")}</p>`;
+  return `<table><tr><th>#</th><th>${t("coin")}</th><th>Score</th><th>Conf.</th><th>RSI</th><th>1h</th></tr>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${coinHtml(item.symbol)}</td><td>${item.score ?? "--"}</td><td>${item.confidence ?? "--"}</td><td>${item.rsi ?? "--"}</td><td class="${cls(item.change_1h)}">${pct(item.change_1h)}</td></tr>`).join("")}</table>`;
 }
 
 async function fetchStatus() {
@@ -255,23 +459,37 @@ async function fetchStatus() {
   throw new Error("Phoenix status file not found");
 }
 
-async function load() {
-  try {
-    const data = await fetchStatus();
-    setPill(data);
-    statusEl.textContent = `🟢 Online · v${data.version || "--"} · ultimo update ${data.last_update || "--"}`;
-    if (data.locked || data.demo_expired || ["expired", "invalid"].includes(data.license_status)) {
-      renderLocked(data);
-    } else {
-      renderDashboard(data);
-    }
-  } catch (error) {
-    pill.className = "pill expired";
-    pill.textContent = "Dati non disponibili";
-    statusEl.textContent = "🔴 Impossibile leggere i dati Phoenix";
-    app.innerHTML = `<div class="notice expired">Controlla che i file dati Phoenix siano raggiungibili da Home Assistant.</div>`;
+function renderDashboardOrLocked(data) {
+  if (data.locked || data.demo_expired || ["expired", "invalid"].includes(data.license_status)) {
+    renderLocked(data);
+  } else {
+    renderDashboard(data);
   }
 }
 
+async function load() {
+  try {
+    const data = await fetchStatus();
+    lastData = data;
+    setPill(data);
+    statusEl.textContent = `🟢 ${t("online")} · v${data.version || "--"} · ${t("lastUpdate")} ${data.last_update || "--"}`;
+    renderDashboardOrLocked(data);
+  } catch (error) {
+    pill.className = "pill expired";
+    pill.textContent = t("dataUnavailable");
+    statusEl.textContent = t("unableToRead");
+    app.innerHTML = `<div class="notice expired">${t("dataCheck")}</div>`;
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const langIt = document.getElementById("phoenixLangIt");
+  const langEn = document.getElementById("phoenixLangEn");
+  if (langIt) langIt.addEventListener("click", () => setLanguage("it"));
+  if (langEn) langEn.addEventListener("click", () => setLanguage("en"));
+  updateStaticText();
+});
+
+updateStaticText();
 load();
 setInterval(load, 30000);
