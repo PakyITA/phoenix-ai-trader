@@ -159,13 +159,14 @@ Durante il wizard puoi configurare:
 - codice di attivazione opzionale
 - notifiche Telegram opzionali
 - servizio notify Telegram di Home Assistant, per esempio `notify.telegram`
+- Telegram Chat ID / target opzionale
 - soglia alert guadagno / perdita in euro
 - soglia alert guadagno / perdita in percentuale
 - tempo minimo tra un alert e l'altro
 
 Non è richiesta configurazione YAML manuale per Phoenix.
 
-> 📱 **Requisito Telegram:** Phoenix non crea e non configura automaticamente il bot Telegram. Per ricevere gli alert Telegram devi prima configurare un servizio `notify` Telegram funzionante in Home Assistant, poi inserire il nome del servizio in Phoenix.
+> 📱 **Requisito Telegram:** Phoenix non crea e non configura automaticamente il bot Telegram. Per ricevere gli alert Telegram devi prima configurare un servizio `notify` Telegram funzionante in Home Assistant, poi inserire in Phoenix il nome del servizio e, quando richiesto dalla tua configurazione Home Assistant, anche il Telegram Chat ID.
 
 ---
 
@@ -191,27 +192,147 @@ Da qui puoi modificare:
 - codice attivazione
 - notifiche Telegram
 - servizio notify Telegram
+- Telegram Chat ID / target
 - soglie alert
 - impostazioni missione
 
 ---
 
-## 📱 Notifiche Telegram
+## 📱 Notifiche Telegram — configurazione completa
 
 Phoenix può inviare avvisi tramite un servizio `notify` di Home Assistant quando il portafoglio simulato raggiunge una soglia configurata di guadagno o perdita.
 
-Prima di abilitare Telegram in Phoenix, devi avere già configurato le notifiche Telegram in Home Assistant. Phoenix si aspetta un servizio notify esistente, ad esempio:
+Phoenix **non crea il bot Telegram** e **non configura automaticamente l'integrazione Telegram di Home Assistant**. Telegram deve già funzionare in Home Assistant prima che Phoenix possa usarlo.
+
+### 1. Configura prima Telegram in Home Assistant
+
+Prima di abilitare Telegram in Phoenix, assicurati che Home Assistant abbia già un servizio Telegram funzionante.
+
+Esempi tipici:
+
+```text
+notify.telegram
+notify.telegram_bot
+notify.pasquale
+```
+
+Il nome preciso dipende dalla tua configurazione Home Assistant.
+
+### 2. Trova il nome corretto del servizio notify
+
+In Home Assistant apri:
+
+```text
+Strumenti per sviluppatori → Servizi
+```
+
+Cerca:
+
+```text
+notify.
+```
+
+Poi individua il servizio Telegram che usi normalmente per inviare messaggi.
+
+Phoenix deve ricevere il nome completo del servizio, incluso `notify.`.
+
+Esempio:
 
 ```text
 notify.telegram
 ```
 
-Se il servizio Telegram nel tuo Home Assistant ha un nome diverso, inserisci esattamente quel nome nel wizard o nella pagina impostazioni Phoenix.
+### 3. Trova il tuo Telegram Chat ID
 
-Phoenix include anche un pulsante **Test Telegram** nella pagina impostazioni. Quando viene premuto, Phoenix invia questo messaggio usando il servizio notify configurato:
+Alcune configurazioni Telegram di Home Assistant hanno già un destinatario predefinito. In quel caso Phoenix può inviare il messaggio usando solo `message`.
+
+Altre configurazioni richiedono anche il destinatario. In quel caso Phoenix deve ricevere anche il **Telegram Chat ID**.
+
+Il Chat ID può essere simile a:
+
+```text
+123456789
+```
+
+oppure, per gruppi e canali, può essere simile a:
+
+```text
+-1001234567890
+```
+
+Di solito puoi trovarlo:
+
+- nella configurazione Telegram già presente in Home Assistant
+- nella configurazione del bot Telegram
+- nei log di Home Assistant quando il bot riceve un messaggio
+- usando un bot/strumento Telegram dedicato alla lettura del proprio chat ID
+
+### 4. Inserisci i dati in Phoenix
+
+Apri:
+
+```text
+Phoenix AI Trader → Impostazioni Phoenix
+```
+
+Compila:
+
+```text
+Telegram attivo: Sì
+Servizio Telegram: notify.telegram
+Telegram Chat ID opzionale: il tuo chat_id
+```
+
+Se il tuo servizio `notify.telegram` ha già un destinatario fisso configurato, puoi lasciare vuoto il campo Chat ID.
+
+### 5. Salva e testa
+
+Clicca:
+
+```text
+Salva impostazioni
+```
+
+Poi clicca:
+
+```text
+Test Telegram
+```
+
+Phoenix invierà questo messaggio:
 
 ```text
 Test Telegram Passato
+```
+
+Se il campo Chat ID è compilato, Phoenix invia:
+
+```yaml
+message: "Test Telegram Passato"
+target: "il_tuo_chat_id"
+```
+
+Se il campo Chat ID è vuoto, Phoenix invia solo:
+
+```yaml
+message: "Test Telegram Passato"
+```
+
+### 6. Se il test Telegram non funziona
+
+Controlla questi punti:
+
+1. Verifica che il bot Telegram funzioni già fuori da Phoenix.
+2. Vai in **Strumenti per sviluppatori → Servizi** e prova manualmente il servizio `notify.telegram`.
+3. Controlla che il nome del servizio inserito in Phoenix sia identico a quello di Home Assistant.
+4. Se il servizio richiede un destinatario, inserisci il Telegram Chat ID in Phoenix.
+5. Controlla i log di Home Assistant cercando errori relativi a `phoenix`, `telegram` o `notify`.
+6. Dopo l'aggiornamento di Phoenix, riavvia Home Assistant.
+
+Comando utile dal terminale di Home Assistant:
+
+```bash
+ha core logs | grep -i phoenix
 ```
 
 ---
@@ -270,7 +391,7 @@ Tutto viene simulato localmente dentro Home Assistant.
 | 🐛 **Bug** | Apri una GitHub Issue |
 | 💡 **Idee** | Usa GitHub Discussions o contatta lo sviluppatore |
 | 🔑 **Licenza** | Licenza annuale · Offerta lancio: **9,99 € per 15 giorni**, poi **19,99 €/anno** · pagamento PayPal → licenza firmata via email |
-| 📱 **Telegram** | Richiede un servizio `notify` Telegram già configurato in Home Assistant |
+| 📱 **Telegram** | Richiede un servizio `notify` Telegram già configurato in Home Assistant e può richiedere il Telegram Chat ID / target |
 | 🇬🇧 **Supporto inglese** | Documentazione inglese disponibile in [README.md](README.md) |
 
 ---
