@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from .paper_trader import maybe_open_paper_position
 from .scanner import build_crypto_scan
 from .storage import PHOENIX_VERSION, read_settings, read_status, update_settings
 
@@ -59,6 +60,8 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not data.get("locked") and not data.get("demo_expired"):
             await self._maybe_run_scanner(data)
             data = await self.hass.async_add_executor_job(read_status, self.data_dir)
+            await self._maybe_open_paper_position(data)
+            data = await self.hass.async_add_executor_job(read_status, self.data_dir)
         await self._maybe_notify_demo_end(data)
         await self._maybe_notify_update_available()
         await self._maybe_send_top_setup_alert(data)
@@ -78,6 +81,32 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         status = await self.hass.async_add_executor_job(read_json, status_path(self.data_dir), {})
         status.update(scan_payload)
         await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), status)
+
+    async def _maybe_open_paper_position(self, data: dict[str, Any]) -> None:
+        settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
+        from .storage import read_json, status_path, trades_path, write_json
+
+        status = await self.hass.async_add_executor_job(read_json, status_path(self.data_dir), {})
+        updated_status, event = maybe_open_paper_position({**status, **data}, settings)
+        if event is None:
+            return
+
+        await self.hass.async_add_executor_job(write_json, status_path(self.data_dir), updated_status)
+        trades = await self.hass.async_add_executor_job(read_json, trades_path(self.data_dir), [])
+        if not isinstance(trades, list):
+            trades = []
+        trades.append(event)
+        await self.hass.async_add_executor_job(write_json, trades_path(self.data_dir), trades[-500:])
+
+        message = (
+            "🤖 Phoenix AI Trader\n\n"
+            "Posizione virtuale aperta automaticamente\n"
+            f"Coin: {event['pair']}\n"
+            f"Investito: {event['amount']:.2f} EUR\n"
+            f"Score: {event['score']}/100\n\n"
+            "Modalità Paper Trading: nessun ordine reale eseguito."
+        )
+        await self._send_telegram_message(message, blocking=False)
 
     async def _telegram_config(self) -> tuple[dict[str, Any], str, str, str] | None:
         settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
