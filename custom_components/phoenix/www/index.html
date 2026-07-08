@@ -6,7 +6,7 @@
 <title>Phoenix AI Trader</title>
 <link rel="stylesheet" href="phoenix.css?v=041">
 <style>
-.actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap}.action-btn{border:1px solid rgba(56,189,248,.45);background:rgba(15,23,42,.92);color:#e0f2fe;border-radius:999px;padding:10px 14px;font-weight:900;text-decoration:none;cursor:pointer}.action-btn:hover{background:rgba(56,189,248,.18)}.action-btn.reset{border-color:rgba(245,158,11,.55);color:#fed7aa}.action-btn.settings{border-color:rgba(139,92,246,.55);color:#ddd6fe}.action-btn.telegram{border-color:rgba(34,197,94,.6);color:#bbf7d0}.action-btn:disabled{opacity:.55;cursor:not-allowed}.settings-panel{display:none;background:rgba(15,23,42,.96);border:1px solid rgba(139,92,246,.45);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 24px 90px rgba(0,0,0,.28)}.settings-panel.open{display:block}.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.settings-field label{display:block;color:#94a3b8;font-size:.85rem;margin:0 0 6px}.settings-field input,.settings-field select{width:100%;box-sizing:border-box;background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:12px;padding:10px}.settings-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}.settings-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.settings-title h2{margin:0}.muted{color:#94a3b8;font-size:.9rem}@media(max-width:900px){.settings-grid{grid-template-columns:1fr}}@media(max-width:700px){.actionbar{justify-content:stretch}.action-btn{width:100%;text-align:center}.settings-actions .action-btn{width:100%}}
+.actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap}.action-btn{border:1px solid rgba(56,189,248,.45);background:rgba(15,23,42,.92);color:#e0f2fe;border-radius:999px;padding:10px 14px;font-weight:900;text-decoration:none;cursor:pointer}.action-btn:hover{background:rgba(56,189,248,.18)}.action-btn.reset{border-color:rgba(245,158,11,.55);color:#fed7aa}.action-btn.settings{border-color:rgba(139,92,246,.55);color:#ddd6fe}.action-btn.telegram{border-color:rgba(34,197,94,.6);color:#bbf7d0}.action-btn.lang{border-color:rgba(56,189,248,.55);color:#bae6fd}.action-btn.lang.active{background:rgba(56,189,248,.22);box-shadow:0 0 0 1px rgba(56,189,248,.45) inset}.action-btn:disabled{opacity:.55;cursor:not-allowed}.settings-panel{display:none;background:rgba(15,23,42,.96);border:1px solid rgba(139,92,246,.45);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 24px 90px rgba(0,0,0,.28)}.settings-panel.open{display:block}.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.settings-field label{display:block;color:#94a3b8;font-size:.85rem;margin:0 0 6px}.settings-field input,.settings-field select{width:100%;box-sizing:border-box;background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:12px;padding:10px}.settings-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}.settings-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.settings-title h2{margin:0}.muted{color:#94a3b8;font-size:.9rem}.language-switch{display:flex;gap:8px;margin-right:auto;flex-wrap:wrap}@media(max-width:900px){.settings-grid{grid-template-columns:1fr}}@media(max-width:700px){.actionbar{justify-content:stretch}.language-switch{width:100%;margin-right:0}.action-btn{width:100%;text-align:center}.language-switch .action-btn{width:calc(50% - 4px)}.settings-actions .action-btn{width:100%}}
 </style>
 </head>
 <body>
@@ -14,13 +14,17 @@
   <header class="hero">
     <div>
       <h1>🦅 Phoenix AI Trader</h1>
-      <p>Paper Trading con AI per Home Assistant</p>
+      <p id="phoenixHeroSubtitle">Paper Trading con AI per Home Assistant</p>
     </div>
     <span id="licensePill" class="pill">Caricamento...</span>
   </header>
 
-  <div class="notice paper">🧪 Modalità Paper Trading — simulazione virtuale, nessun acquisto reale viene eseguito.</div>
+  <div id="phoenixPaperNotice" class="notice paper">🧪 Modalità Paper Trading — simulazione virtuale, nessun acquisto reale viene eseguito.</div>
   <div class="actionbar">
+    <div class="language-switch">
+      <button id="phoenixLangIt" class="action-btn lang" type="button">🇮🇹 ITA</button>
+      <button id="phoenixLangEn" class="action-btn lang" type="button">🇬🇧 ENG</button>
+    </div>
     <button id="phoenixResetMissionBtn" class="action-btn reset" type="button">🔄 Reset missione</button>
     <button id="phoenixOpenSettingsBtn" class="action-btn settings" type="button">⚙️ Impostazioni Phoenix</button>
   </div>
@@ -60,7 +64,7 @@
   <p id="status" class="status">Caricamento dati Phoenix...</p>
   <main id="app"></main>
 </div>
-<script src="phoenix.js?v=045"></script>
+<script src="phoenix.js?v=046"></script>
 <script src="phoenix-actions.js?v=005"></script>
 </body>
 </html>
