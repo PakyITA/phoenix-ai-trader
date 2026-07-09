@@ -275,24 +275,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             or current_config.get(CONF_TELEGRAM_SERVICE)
             or DEFAULT_TELEGRAM_SERVICE
         ).strip()
-        telegram_chat_id = str(
-            payload.get(CONF_TELEGRAM_CHAT_ID)
-            or current_config.get(CONF_TELEGRAM_CHAT_ID)
-            or DEFAULT_TELEGRAM_CHAT_ID
-        ).strip()
 
         if not telegram_service or "." not in telegram_service:
             raise ValueError(f"Invalid Telegram notify service: {telegram_service}")
 
         domain, service = telegram_service.split(".", 1)
-        service_data = {"message": "Test Telegram Passato"}
-        if telegram_chat_id:
-            service_data["target"] = [telegram_chat_id]
-
         await hass.services.async_call(
             domain,
             service,
-            service_data,
+            {"message": "Test Telegram Passato"},
             blocking=True,
         )
 
