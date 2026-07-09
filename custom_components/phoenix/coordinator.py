@@ -117,20 +117,19 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         await self._send_telegram_message(message, blocking=False, context="auto_paper_buy")
 
-    async def _telegram_config(self) -> tuple[dict[str, Any], str, str, str] | None:
+    async def _telegram_config(self) -> tuple[dict[str, Any], str, str] | None:
         settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
         if not settings.get("telegram_enabled", False):
             _LOGGER.debug("Phoenix Telegram is disabled")
             return None
 
         service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
-        telegram_chat_id = str(settings.get("telegram_chat_id", "")).strip()
         if not service_name or "." not in service_name:
             _LOGGER.warning("Phoenix Telegram service is invalid: %s", service_name)
             return None
 
         domain, service = service_name.split(".", 1)
-        return settings, domain, service, telegram_chat_id
+        return settings, domain, service
 
     async def _send_telegram_message(self, message: str, *, blocking: bool = False, context: str = "generic") -> bool:
         config = await self._telegram_config()
@@ -138,10 +137,8 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._record_telegram_status("disabled", context, "Telegram disabled or invalid service")
             return False
 
-        _settings, domain, service, telegram_chat_id = config
+        _settings, domain, service = config
         service_data = {"message": message}
-        if telegram_chat_id:
-            service_data["target"] = [telegram_chat_id]
 
         try:
             await self.hass.services.async_call(
@@ -302,7 +299,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         config = await self._telegram_config()
         if config is None:
             return
-        settings, _domain, _service, _telegram_chat_id = config
+        settings, _domain, _service = config
 
         pnl = float(data.get("total_profit") or 0.0)
         pnl_percent = float(data.get("total_profit_percent") or 0.0)
