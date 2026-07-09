@@ -146,6 +146,10 @@ def _license_overlay(data_dir: str, settings: dict[str, Any]) -> dict[str, Any]:
         "telegram_service": guarded_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
         "telegram_chat_id_saved": bool(telegram_chat_id),
         "license_key_saved": bool(license_key),
+        "last_telegram_at": guarded_settings.get("last_telegram_at"),
+        "last_telegram_status": guarded_settings.get("last_telegram_status", "N/D"),
+        "last_telegram_context": guarded_settings.get("last_telegram_context", "N/D"),
+        "last_telegram_error": guarded_settings.get("last_telegram_error", ""),
         "alert_threshold_eur": guarded_settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
         "alert_threshold_percent": guarded_settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
         "alert_cooldown_hours": guarded_settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
@@ -350,6 +354,10 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "telegram_service",
         "telegram_chat_id_saved",
         "license_key_saved",
+        "last_telegram_at",
+        "last_telegram_status",
+        "last_telegram_context",
+        "last_telegram_error",
     }
     if any(status.get(key) != normalized.get(key) for key in keys):
         write_json(path, normalized)
