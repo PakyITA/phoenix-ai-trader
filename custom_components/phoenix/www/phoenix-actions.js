@@ -18,17 +18,28 @@ function phoenixSetValue(id, value) {
   if (el) el.value = value ?? "";
 }
 
+function phoenixSetPlaceholder(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.placeholder = value ?? "";
+}
+
 function phoenixGetValue(id) {
   const el = document.getElementById(id);
   return el ? el.value : "";
 }
 
 async function phoenixFetchStatus() {
-  const response = await fetch("/local/phoenix-ai-trader-ha/status.json?ts=" + Date.now(), {
-    credentials: "same-origin",
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return await response.json();
+  const urls = [
+    "/local/phoenix-ai-trader-ha/status.json",
+    "/local/phoenix-ai-trader-ha/phoenix_status.json",
+  ];
+  for (const url of urls) {
+    try {
+      const response = await fetch(url + "?ts=" + Date.now(), { credentials: "same-origin" });
+      if (response.ok) return await response.json();
+    } catch (error) {}
+  }
+  throw new Error("Phoenix status not available");
 }
 
 async function phoenixCallService(service, payload) {
@@ -85,13 +96,15 @@ async function phoenixOpenSettings() {
     phoenixSetValue("phoenixSetDurationUnit", mission.duration_unit ?? "years");
     phoenixSetValue("phoenixSetEmail", d.email ?? "");
     phoenixSetValue("phoenixSetActivationCode", "");
+    phoenixSetPlaceholder("phoenixSetActivationCode", d.license_key_saved ? "Licenza già salvata — lascia vuoto per mantenerla" : "lascia vuoto per demo");
     phoenixSetValue("phoenixSetTelegramEnabled", String(Boolean(d.telegram_enabled)));
     phoenixSetValue("phoenixSetTelegramService", d.telegram_service ?? "notify.telegram");
-    phoenixSetValue("phoenixSetTelegramChatId", d.telegram_chat_id ?? "");
+    phoenixSetValue("phoenixSetTelegramChatId", "");
+    phoenixSetPlaceholder("phoenixSetTelegramChatId", d.telegram_chat_id_saved ? "Chat ID già salvato — lascia vuoto per mantenerlo" : "es. 123456789 o -1001234567890");
     phoenixSetValue("phoenixSetThresholdEur", d.alert_threshold_eur ?? 10);
     phoenixSetValue("phoenixSetThresholdPercent", d.alert_threshold_percent ?? 1);
     phoenixSetValue("phoenixSetCooldownHours", d.alert_cooldown_hours ?? 24);
-    phoenixSetText("phoenixSettingsStatus", "Impostazioni caricate. Modifica i valori e salva.");
+    phoenixSetText("phoenixSettingsStatus", "Impostazioni caricate. I campi privati già salvati possono restare vuoti.");
   } catch (error) {
     phoenixSetText("phoenixSettingsStatus", "Impossibile caricare le impostazioni Phoenix.");
   }
@@ -103,20 +116,24 @@ function phoenixCloseSettings() {
 }
 
 function phoenixSettingsPayload() {
-  return {
+  const activationCode = phoenixGetValue("phoenixSetActivationCode").trim();
+  const telegramChatId = phoenixGetValue("phoenixSetTelegramChatId").trim();
+  const payload = {
     start_capital: Number(phoenixGetValue("phoenixSetStartCapital") || 0),
     target_capital: Number(phoenixGetValue("phoenixSetTargetCapital") || 0),
     duration_value: Number(phoenixGetValue("phoenixSetDurationValue") || 1),
     duration_unit: phoenixGetValue("phoenixSetDurationUnit") || "years",
     email: phoenixGetValue("phoenixSetEmail").trim(),
-    activation_code: phoenixGetValue("phoenixSetActivationCode").trim(),
     telegram_enabled: phoenixGetValue("phoenixSetTelegramEnabled") === "true",
     telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
-    telegram_chat_id: phoenixGetValue("phoenixSetTelegramChatId").trim(),
     alert_threshold_eur: Number(phoenixGetValue("phoenixSetThresholdEur") || 0),
     alert_threshold_percent: Number(phoenixGetValue("phoenixSetThresholdPercent") || 0),
     alert_cooldown_hours: Number(phoenixGetValue("phoenixSetCooldownHours") || 24),
   };
+
+  if (activationCode) payload.activation_code = activationCode;
+  if (telegramChatId) payload.telegram_chat_id = telegramChatId;
+  return payload;
 }
 
 async function phoenixSaveSettings(resetAfterSave = false) {
@@ -146,11 +163,14 @@ async function phoenixTestTelegram() {
   if (button) button.disabled = true;
   phoenixSetText("phoenixSettingsStatus", "Invio test Telegram...");
 
+  const payload = {
+    telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
+  };
+  const telegramChatId = phoenixGetValue("phoenixSetTelegramChatId").trim();
+  if (telegramChatId) payload.telegram_chat_id = telegramChatId;
+
   try {
-    await phoenixCallService("test_telegram", {
-      telegram_service: phoenixGetValue("phoenixSetTelegramService").trim() || "notify.telegram",
-      telegram_chat_id: phoenixGetValue("phoenixSetTelegramChatId").trim(),
-    });
+    await phoenixCallService("test_telegram", payload);
     phoenixSetText("phoenixSettingsStatus", "Test Telegram inviato. Controlla Telegram.");
   } catch (error) {
     phoenixSetText("phoenixSettingsStatus", "Test Telegram non riuscito. Verifica servizio notify, Chat ID e log di Home Assistant.");
