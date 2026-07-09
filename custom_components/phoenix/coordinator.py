@@ -68,6 +68,15 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         await self._maybe_send_telegram_alert(data)
         return data
 
+    async def _record_telegram_status(self, status: str, context: str, error: str | None = None) -> None:
+        payload = {
+            "last_telegram_at": _now_string(),
+            "last_telegram_status": status,
+            "last_telegram_context": context,
+            "last_telegram_error": error or "",
+        }
+        await self.hass.async_add_executor_job(update_settings, self.data_dir, payload)
+
     async def _maybe_run_scanner(self, data: dict[str, Any]) -> None:
         last_scan = _parse_dt(data.get("last_scan_at"))
         if last_scan and datetime.now() - last_scan < timedelta(seconds=SCAN_INTERVAL_SECONDS):
@@ -106,11 +115,12 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Score: {event['score']}/100\n\n"
             "Modalità Paper Trading: nessun ordine reale eseguito."
         )
-        await self._send_telegram_message(message, blocking=False)
+        await self._send_telegram_message(message, blocking=False, context="auto_paper_buy")
 
     async def _telegram_config(self) -> tuple[dict[str, Any], str, str, str] | None:
         settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
         if not settings.get("telegram_enabled", False):
+            _LOGGER.debug("Phoenix Telegram is disabled")
             return None
 
         service_name = str(settings.get("telegram_service", "notify.telegram")).strip()
@@ -122,9 +132,10 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         domain, service = service_name.split(".", 1)
         return settings, domain, service, telegram_chat_id
 
-    async def _send_telegram_message(self, message: str, *, blocking: bool = False) -> bool:
+    async def _send_telegram_message(self, message: str, *, blocking: bool = False, context: str = "generic") -> bool:
         config = await self._telegram_config()
         if config is None:
+            await self._record_telegram_status("disabled", context, "Telegram disabled or invalid service")
             return False
 
         _settings, domain, service, telegram_chat_id = config
@@ -139,10 +150,12 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 service_data,
                 blocking=blocking,
             )
-        except Exception:
+        except Exception as err:
             _LOGGER.exception("Unable to send Phoenix Telegram message")
+            await self._record_telegram_status("failed", context, str(err))
             return False
 
+        await self._record_telegram_status("sent", context)
         return True
 
     async def _maybe_send_top_setup_alert(self, data: dict[str, Any]) -> None:
@@ -182,7 +195,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "Modalità Paper Trading: nessun ordine reale eseguito."
         )
 
-        sent = await self._send_telegram_message(message, blocking=False)
+        sent = await self._send_telegram_message(message, blocking=False, context="top_setup")
         if not sent:
             return
 
@@ -324,7 +337,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Investito: {invested:.2f} EUR"
         )
 
-        sent = await self._send_telegram_message(message, blocking=False)
+        sent = await self._send_telegram_message(message, blocking=False, context="pnl_alert")
         if not sent:
             return
 
