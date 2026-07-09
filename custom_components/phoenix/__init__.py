@@ -39,10 +39,17 @@ from .const import (
     DOMAIN,
     PLATFORMS,
 )
-from .storage import ensure_data_files
+from .storage import ensure_data_files, read_settings
 from .update_notifier import async_check_update
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _payload_or_saved(payload: dict, settings: dict, key: str, default=None):
+    value = payload.get(key)
+    if value is None or value == "":
+        return settings.get(key, default)
+    return value
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -106,7 +113,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry,
         data=data,
         options=options,
-        version=9,
+        version=10,
     )
     return True
 
@@ -126,6 +133,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE),
         bool(config.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
         config.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE),
+        config.get(CONF_TELEGRAM_CHAT_ID, DEFAULT_TELEGRAM_CHAT_ID),
         float(config.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)),
         float(config.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)),
         int(config.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)),
@@ -137,20 +145,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def _handle_update_settings(call: ServiceCall) -> None:
         payload = dict(call.data or {})
         await hass.async_add_executor_job(update_phoenix_settings, data_dir, payload)
+        saved_settings = await hass.async_add_executor_job(read_settings, data_dir)
 
         mapped_options = {
-            CONF_START_CAPITAL: float(payload.get(CONF_START_CAPITAL, config.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL))),
-            CONF_TARGET_CAPITAL: float(payload.get(CONF_TARGET_CAPITAL, config.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL))),
-            CONF_DURATION_VALUE: int(payload.get(CONF_DURATION_VALUE, config.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE))),
-            CONF_DURATION_UNIT: payload.get(CONF_DURATION_UNIT, config.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)),
-            CONF_EMAIL: payload.get(CONF_EMAIL, config.get(CONF_EMAIL, DEFAULT_EMAIL)),
-            CONF_LICENSE_KEY: payload.get(CONF_LICENSE_KEY, config.get(CONF_LICENSE_KEY, DEFAULT_ACTIVATION_CODE)),
-            CONF_TELEGRAM_ENABLED: bool(payload.get(CONF_TELEGRAM_ENABLED, config.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED))),
-            CONF_TELEGRAM_SERVICE: payload.get(CONF_TELEGRAM_SERVICE, config.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE)),
-            CONF_TELEGRAM_CHAT_ID: payload.get(CONF_TELEGRAM_CHAT_ID, config.get(CONF_TELEGRAM_CHAT_ID, DEFAULT_TELEGRAM_CHAT_ID)),
-            CONF_ALERT_THRESHOLD_EUR: float(payload.get(CONF_ALERT_THRESHOLD_EUR, config.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR))),
-            CONF_ALERT_THRESHOLD_PERCENT: float(payload.get(CONF_ALERT_THRESHOLD_PERCENT, config.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT))),
-            CONF_ALERT_COOLDOWN_HOURS: int(payload.get(CONF_ALERT_COOLDOWN_HOURS, config.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS))),
+            CONF_START_CAPITAL: float(saved_settings.get(CONF_START_CAPITAL, DEFAULT_START_CAPITAL)),
+            CONF_TARGET_CAPITAL: float(saved_settings.get(CONF_TARGET_CAPITAL, DEFAULT_TARGET_CAPITAL)),
+            CONF_DURATION_VALUE: int(saved_settings.get(CONF_DURATION_VALUE, DEFAULT_DURATION_VALUE)),
+            CONF_DURATION_UNIT: saved_settings.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT),
+            CONF_EMAIL: saved_settings.get(CONF_EMAIL, DEFAULT_EMAIL),
+            CONF_LICENSE_KEY: saved_settings.get("license_key", DEFAULT_ACTIVATION_CODE),
+            CONF_TELEGRAM_ENABLED: bool(saved_settings.get(CONF_TELEGRAM_ENABLED, DEFAULT_TELEGRAM_ENABLED)),
+            CONF_TELEGRAM_SERVICE: saved_settings.get(CONF_TELEGRAM_SERVICE, DEFAULT_TELEGRAM_SERVICE),
+            CONF_TELEGRAM_CHAT_ID: saved_settings.get(CONF_TELEGRAM_CHAT_ID, DEFAULT_TELEGRAM_CHAT_ID),
+            CONF_ALERT_THRESHOLD_EUR: float(saved_settings.get(CONF_ALERT_THRESHOLD_EUR, DEFAULT_ALERT_THRESHOLD_EUR)),
+            CONF_ALERT_THRESHOLD_PERCENT: float(saved_settings.get(CONF_ALERT_THRESHOLD_PERCENT, DEFAULT_ALERT_THRESHOLD_PERCENT)),
+            CONF_ALERT_COOLDOWN_HOURS: int(saved_settings.get(CONF_ALERT_COOLDOWN_HOURS, DEFAULT_ALERT_COOLDOWN_HOURS)),
         }
 
         new_options = {**entry.options, **mapped_options}
@@ -164,8 +173,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def _handle_test_telegram(call: ServiceCall) -> None:
         payload = dict(call.data or {})
+        saved_settings = await hass.async_add_executor_job(read_settings, data_dir)
         runtime = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
-        current_config = {**entry.data, **entry.options, **runtime}
+        current_config = {**entry.data, **entry.options, **runtime, **saved_settings}
         telegram_service = str(
             payload.get(CONF_TELEGRAM_SERVICE)
             or current_config.get(CONF_TELEGRAM_SERVICE)
