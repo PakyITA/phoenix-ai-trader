@@ -16,6 +16,8 @@ from .storage import (
     write_json,
 )
 
+CLEAR_VALUES = {"clear", "cancella", "delete", "reset", "none", "null", "-"}
+
 
 def _float(value: Any, default: float) -> float:
     try:
@@ -31,6 +33,18 @@ def _int(value: Any, default: int) -> int:
         return int(default)
 
 
+def _private_string(payload: dict[str, Any], settings: dict[str, Any], key: str, stored_key: str | None = None) -> str:
+    stored = stored_key or key
+    if key not in payload:
+        return str(settings.get(stored, "") or "").strip()
+    value = str(payload.get(key) or "").strip()
+    if value.lower() in CLEAR_VALUES:
+        return ""
+    if value == "":
+        return str(settings.get(stored, "") or "").strip()
+    return value
+
+
 def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str, Any]:
     settings = read_json(settings_path(data_dir), default={})
     status = read_json(status_path(data_dir), default={})
@@ -41,8 +55,8 @@ def update_phoenix_settings(data_dir: str, payload: dict[str, Any]) -> dict[str,
     duration_value = _int(payload.get("duration_value"), _int(settings.get("duration_value"), 7))
     duration_unit = str(payload.get("duration_unit") or settings.get("duration_unit") or "days")
     email = str(payload.get("email") if payload.get("email") is not None else settings.get("email", "")).strip()
-    activation_code = str(payload.get("activation_code") or settings.get("license_key", "")).strip()
-    telegram_chat_id = str(payload.get("telegram_chat_id") if payload.get("telegram_chat_id") is not None else settings.get("telegram_chat_id", "")).strip()
+    activation_code = _private_string(payload, settings, "activation_code", "license_key")
+    telegram_chat_id = _private_string(payload, settings, "telegram_chat_id")
 
     mission = status.get("mission") if isinstance(status.get("mission"), dict) else {}
     mission_changed = (
