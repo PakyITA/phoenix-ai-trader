@@ -10,6 +10,7 @@ from .const import (
     DEFAULT_ALERT_COOLDOWN_HOURS,
     DEFAULT_ALERT_THRESHOLD_EUR,
     DEFAULT_ALERT_THRESHOLD_PERCENT,
+    DEFAULT_TELEGRAM_CHAT_ID,
     DEFAULT_TELEGRAM_ENABLED,
     DEFAULT_TELEGRAM_SERVICE,
     HISTORY_FILENAME,
@@ -134,6 +135,8 @@ def _settings_with_trial_guard(data_dir: str, settings: dict[str, Any]) -> dict[
 def _license_overlay(data_dir: str, settings: dict[str, Any]) -> dict[str, Any]:
     guarded_settings = _settings_with_trial_guard(data_dir, settings)
     license_state = evaluate_license(guarded_settings)
+    telegram_chat_id = _clean_string(guarded_settings.get("telegram_chat_id"), DEFAULT_TELEGRAM_CHAT_ID)
+    license_key = _clean_string(guarded_settings.get("license_key"), "")
     return {
         **license_state,
         "email": guarded_settings.get("email", ""),
@@ -141,6 +144,8 @@ def _license_overlay(data_dir: str, settings: dict[str, Any]) -> dict[str, Any]:
         "locked": license_state["demo_expired"],
         "telegram_enabled": guarded_settings.get("telegram_enabled", False),
         "telegram_service": guarded_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE),
+        "telegram_chat_id_saved": bool(telegram_chat_id),
+        "license_key_saved": bool(license_key),
         "alert_threshold_eur": guarded_settings.get("alert_threshold_eur", DEFAULT_ALERT_THRESHOLD_EUR),
         "alert_threshold_percent": guarded_settings.get("alert_threshold_percent", DEFAULT_ALERT_THRESHOLD_PERCENT),
         "alert_cooldown_hours": guarded_settings.get("alert_cooldown_hours", DEFAULT_ALERT_COOLDOWN_HOURS),
@@ -176,6 +181,7 @@ def ensure_data_files(
     license_key: str | None = None,
     telegram_enabled: bool = DEFAULT_TELEGRAM_ENABLED,
     telegram_service: str = DEFAULT_TELEGRAM_SERVICE,
+    telegram_chat_id: str = DEFAULT_TELEGRAM_CHAT_ID,
     alert_threshold_eur: float = DEFAULT_ALERT_THRESHOLD_EUR,
     alert_threshold_percent: float = DEFAULT_ALERT_THRESHOLD_PERCENT,
     alert_cooldown_hours: int = DEFAULT_ALERT_COOLDOWN_HOURS,
@@ -189,6 +195,7 @@ def ensure_data_files(
     clean_email = _clean_string(email, existing_settings.get("email", ""))
     clean_license_key = _clean_string(license_key, existing_settings.get("license_key", ""))
     clean_telegram_service = _clean_string(telegram_service, existing_settings.get("telegram_service", DEFAULT_TELEGRAM_SERVICE))
+    clean_telegram_chat_id = _clean_string(telegram_chat_id, existing_settings.get("telegram_chat_id", DEFAULT_TELEGRAM_CHAT_ID))
 
     license_payload = build_license_payload(
         email=clean_email,
@@ -208,6 +215,7 @@ def ensure_data_files(
         "license_key": clean_license_key,
         "telegram_enabled": bool(telegram_enabled),
         "telegram_service": clean_telegram_service,
+        "telegram_chat_id": clean_telegram_chat_id,
         "alert_threshold_eur": float(alert_threshold_eur),
         "alert_threshold_percent": float(alert_threshold_percent),
         "alert_cooldown_hours": int(alert_cooldown_hours),
@@ -340,6 +348,8 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "trial_lock_reason",
         "telegram_enabled",
         "telegram_service",
+        "telegram_chat_id_saved",
+        "license_key_saved",
     }
     if any(status.get(key) != normalized.get(key) for key in keys):
         write_json(path, normalized)
