@@ -90,6 +90,7 @@ def build_crypto_scan(status: dict[str, Any] | None = None) -> dict[str, Any]:
     It gives the dashboard useful ranked setups while the real market-data backend
     is developed.
     """
+    status = status or {}
     now = datetime.now()
     minute_bucket = int(now.timestamp() // 300)
     symbols = DEFAULT_SYMBOLS
@@ -133,5 +134,5 @@ def build_crypto_scan(status: dict[str, Any] | None = None) -> dict[str, Any]:
         "top_confidence": top.get("confidence", "N/D"),
         "top_quality": top.get("quality", "N/D"),
         "market_risk": top.get("market_risk", "N/D"),
-        "last_trade": "N/D",
+        "last_trade": status.get("last_trade", "N/D"),
     }
