@@ -141,7 +141,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         _settings, domain, service, telegram_chat_id = config
         service_data = {"message": message}
         if telegram_chat_id:
-            service_data["target"] = telegram_chat_id
+            service_data["target"] = [telegram_chat_id]
 
         try:
             await self.hass.services.async_call(
