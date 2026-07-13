@@ -115,7 +115,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Score: {event['score']}/100\n\n"
             "Modalità Paper Trading: nessun ordine reale eseguito."
         )
-        await self._send_telegram_message(message, blocking=False, context="auto_paper_buy")
+        await self._send_telegram_message(message, blocking=True, context="auto_paper_buy")
 
     async def _telegram_config(self) -> tuple[dict[str, Any], str, str] | None:
         settings = await self.hass.async_add_executor_job(read_settings, self.data_dir)
@@ -131,7 +131,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         domain, service = service_name.split(".", 1)
         return settings, domain, service
 
-    async def _send_telegram_message(self, message: str, *, blocking: bool = False, context: str = "generic") -> bool:
+    async def _send_telegram_message(self, message: str, *, blocking: bool = True, context: str = "generic") -> bool:
         config = await self._telegram_config()
         if config is None:
             await self._record_telegram_status("disabled", context, "Telegram disabled or invalid service")
@@ -192,7 +192,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "Modalità Paper Trading: nessun ordine reale eseguito."
         )
 
-        sent = await self._send_telegram_message(message, blocking=False, context="top_setup")
+        sent = await self._send_telegram_message(message, blocking=True, context="top_setup")
         if not sent:
             return
 
@@ -334,7 +334,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             f"Investito: {invested:.2f} EUR"
         )
 
-        sent = await self._send_telegram_message(message, blocking=False, context="pnl_alert")
+        sent = await self._send_telegram_message(message, blocking=True, context="pnl_alert")
         if not sent:
             return
 
