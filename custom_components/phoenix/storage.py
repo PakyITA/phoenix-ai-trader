@@ -22,7 +22,7 @@ from .license import build_license_payload, evaluate_license
 from .trial_guard import ensure_trial_guard
 
 
-PHOENIX_VERSION = "0.4.0"
+PHOENIX_VERSION = "0.4.1"
 PUBLIC_STATUS_DIR = "/config/www/phoenix-ai-trader-ha"
 PUBLIC_STATUS_ALIASES = {STATUS_FILENAME, "status.json"}
 
@@ -358,11 +358,15 @@ def read_status(data_dir: str) -> dict[str, Any]:
         "last_telegram_status",
         "last_telegram_context",
         "last_telegram_error",
+        "alert_threshold_eur",
+        "alert_threshold_percent",
+        "alert_cooldown_hours",
+        "demo_duration_seconds",
+        "license_plan",
+        "license_id",
+        "license_issued_at",
+        "license_expires_at",
     }
-    if any(status.get(key) != normalized.get(key) for key in keys):
+    if any(normalized.get(key) != status.get(key) for key in keys):
         write_json(path, normalized)
-        _append_history(data_dir, normalized)
-    else:
-        _mirror_public_status(path, normalized)
-
     return normalized
