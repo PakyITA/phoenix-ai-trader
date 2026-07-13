@@ -18,7 +18,7 @@
 [![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PakyITA&repository=phoenix-ai-trader&category=integration)
 
 **🇮🇹 Italian documentation:** [README.it.md](README.it.md)  
-**📜 Changelog:** [CHANGELOG.md](CHANGELOG.md)
+**📜 Changelog:** [CHANGELOG.md](CHANGELOG.md) · [Italian changelog](CHANGELOG.it.md)
 
 ---
 
@@ -34,21 +34,19 @@ Create a virtual crypto portfolio, monitor profit and loss, receive Telegram ale
 
 ---
 
-## ✅ Current Version
+## 🆕 What's new in 0.4.1
 
-```text
-0.4.1
-```
+Version **0.4.1** focuses on Telegram reliability and documentation cleanup.
 
-### Highlights in 0.4.1
+- Fixed Telegram alerts blocked by Telegram MarkdownV2 parsing.
+- Automatically escapes Telegram MarkdownV2 reserved characters before sending Phoenix alerts.
+- Uses blocking Home Assistant service calls for Telegram alerts, so errors are easier to diagnose.
+- Aligns the public `status.json` version with the internal integration version.
+- Adds a dedicated Italian changelog.
+- Keeps documentation generic by using examples such as `notify.telegram_user` and `notify.user`.
+- Standardizes documentation files to `README.md` and `README.it.md`.
 
-- Fixed Telegram MarkdownV2 parsing errors.
-- Telegram alerts now escape reserved MarkdownV2 characters automatically.
-- Automatic paper trading Telegram messages now work with Home Assistant Telegram notify services.
-- Internal Phoenix version is aligned with the HACS manifest version.
-- Improved Telegram troubleshooting instructions.
-
-See the full changelog: [CHANGELOG.md](CHANGELOG.md)
+See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ---
 
@@ -92,6 +90,8 @@ Licenses are:
 - valid for one Home Assistant installation
 - verified locally using a signed offline license
 
+After payment, the signed license is sent by email.
+
 ---
 
 ## ✨ What makes Phoenix different
@@ -99,9 +99,8 @@ Licenses are:
 | | |
 |---|---|
 | 🧠 **AI Paper Trading** | Simulate a crypto portfolio and test ideas without risking real money |
-| 🤖 **Automatic virtual positions** | Phoenix can open simulated paper positions from high-score setups |
 | 📊 **Home Assistant dashboard** | Monitor equity, liquidity, open positions, profit/loss and mission progress |
-| 📱 **Telegram alerts** | Receive alerts for virtual buys, market setups and profit/loss thresholds |
+| 📱 **Telegram alerts** | Receive alerts for automatic paper trades, high-score setups and profit/loss thresholds |
 | 🎯 **Mission Mode** | Set an initial capital, target capital and time goal |
 | 🏠 **Native entities** | Use sensors and binary sensors in dashboards, scripts and automations |
 | 🔐 **24h trial + annual license** | Try Phoenix first, then unlock it with a personal signed annual license |
@@ -122,7 +121,6 @@ Phoenix includes a dedicated Home Assistant sidebar panel with:
 - 🪙 Cryptocurrency logos
 - 🧠 AI score
 - 🔐 Trial / license status
-- 📱 Telegram diagnostics
 
 <p align="center">
   <img src="docs/dashboard.png" width="95%" alt="Phoenix AI Trader Dashboard Preview">
@@ -179,7 +177,7 @@ During the setup wizard you can configure:
 - Email
 - Optional activation code
 - Optional Telegram notifications
-- Home Assistant Telegram notify service, for example `notify.telegram`
+- Home Assistant Telegram notify service, for example `notify.telegram_user`
 - Optional Telegram Chat ID / target
 - Profit / loss alert threshold in EUR
 - Profit / loss alert threshold in percent
@@ -187,7 +185,7 @@ During the setup wizard you can configure:
 
 No manual YAML configuration is required for Phoenix itself.
 
-> 📱 **Telegram requirement:** Phoenix does not create or configure the Telegram bot automatically. To receive Telegram alerts, you must first configure a working Telegram `notify` service in Home Assistant.
+> 📱 **Telegram requirement:** Phoenix does not create or configure the Telegram bot automatically. To receive Telegram alerts, you must first configure a working Telegram `notify` service in Home Assistant, then enter the service name and, when required by your Home Assistant setup, the Telegram Chat ID in Phoenix.
 
 ---
 
@@ -217,7 +215,7 @@ From there you can update:
 - alert thresholds
 - mission settings
 
-Private fields such as license key and Telegram Chat ID are preserved when left empty. To intentionally clear a saved private value, enter:
+Private values such as activation code and Telegram Chat ID are preserved when their fields are left empty. To clear a saved private value, enter:
 
 ```text
 CLEAR
@@ -227,14 +225,9 @@ CLEAR
 
 ## 📱 Telegram Notifications — Complete Setup
 
-Phoenix can send Home Assistant `notify` alerts for:
+Phoenix can send Home Assistant `notify` alerts for automatic paper trades, high-score market setups and profit/loss thresholds.
 
-- automatic paper buy events
-- high-score market setups
-- simulated profit/loss thresholds
-- Phoenix startup/status checks
-
-Phoenix **does not** create the Telegram bot and **does not** configure the Home Assistant Telegram integration automatically. Telegram must already work in Home Assistant before Phoenix can use it.
+Phoenix does **not** create the Telegram bot and does **not** configure the Home Assistant Telegram integration automatically. Telegram must already work in Home Assistant before Phoenix can use it.
 
 ### 1. Configure Telegram in Home Assistant first
 
@@ -244,32 +237,57 @@ Typical examples are:
 
 ```text
 notify.telegram
-notify.telegram_bot
-notify.pasquale
-notify.telegram_pasquale
+notify.telegram_user
+notify.user
 ```
 
 The exact name depends on your Home Assistant configuration.
 
-### 2. Test your notify service manually
+### 2. Find the correct notify service name
 
 In Home Assistant open:
 
 ```text
-Developer Tools → Actions
+Developer Tools → Services
 ```
 
-Run a direct notify test such as:
+Search for:
 
-```yaml
-action: notify.telegram_pasquale
-data:
-  message: "Test Telegram from Home Assistant"
+```text
+notify.
 ```
 
-If this does not work, fix Telegram in Home Assistant before troubleshooting Phoenix.
+Then identify the Telegram service you normally use to send messages.
 
-### 3. Fill in Phoenix settings
+Phoenix must receive the full service name, including `notify.`.
+
+Example:
+
+```text
+notify.telegram_user
+```
+
+### 3. Telegram Chat ID
+
+Some Home Assistant Telegram configurations already include a default target. In that case, Phoenix can send messages using only `message`.
+
+Other configurations require a target. In that case, Phoenix also needs the Telegram **Chat ID**.
+
+The Chat ID can be:
+
+```text
+123456789
+```
+
+or, for groups/channels, it can look like:
+
+```text
+-1001234567890
+```
+
+If your Home Assistant notify service already has a fixed recipient configured, leave the Chat ID field empty.
+
+### 4. Fill in Phoenix settings
 
 Open:
 
@@ -281,21 +299,11 @@ Then configure:
 
 ```text
 Telegram enabled: Yes
-Telegram service: notify.telegram_pasquale
+Telegram service: notify.telegram_user
 Telegram Chat ID: optional
 ```
 
-If your Home Assistant notify service already has a fixed recipient configured, leave the Chat ID field empty.
-
-If you previously saved a wrong Chat ID, enter:
-
-```text
-CLEAR
-```
-
-then save settings.
-
-### 4. Save and test
+### 5. Save and test
 
 Click:
 
@@ -315,31 +323,38 @@ Phoenix will send:
 Test Telegram Passato
 ```
 
-### 5. MarkdownV2 compatibility
+If the Chat ID field is empty, Phoenix sends only:
 
-Since version **0.4.1**, Phoenix automatically escapes Telegram MarkdownV2 reserved characters before sending alerts. This prevents Telegram errors such as:
-
-```text
-Can't parse entities: character '.' is reserved and must be escaped
+```yaml
+message: "Test Telegram Passato"
 ```
+
+If the Chat ID field is filled, Phoenix can send the message with an explicit target.
 
 ### 6. Troubleshooting
 
 If the test fails:
 
 1. Check that the Telegram bot works outside Phoenix.
-2. Go to **Developer Tools → Actions** and manually test your `notify.telegram` service.
+2. Go to **Developer Tools → Services** and manually test your notify service.
 3. Verify that the service name entered in Phoenix is exactly correct.
 4. If your service requires a target, enter the Telegram Chat ID in Phoenix.
-5. If a wrong Chat ID is saved, enter `CLEAR`, save and test again.
-6. Check Home Assistant logs for errors related to `phoenix`, `telegram` or `notify`.
-7. Restart Home Assistant after updating Phoenix.
+5. Check Home Assistant logs for errors related to `phoenix`, `telegram` or `notify`.
+6. Restart Home Assistant after updating Phoenix.
 
 Useful log checks from Home Assistant terminal:
 
 ```bash
 ha core logs -n 200 | grep -i phoenix
 ha core logs -n 200 | grep -i telegram
+```
+
+### MarkdownV2 note
+
+Home Assistant Telegram setups may use MarkdownV2 parsing. Phoenix 0.4.1 automatically escapes reserved MarkdownV2 characters before sending alerts, preventing errors such as:
+
+```text
+Can't parse entities: character '.' is reserved and must be escaped
 ```
 
 ---
@@ -362,20 +377,27 @@ Click the **Add to Home Assistant** badge at the top of this README.
 8. Add **Phoenix AI Trader**
 9. Complete the setup wizard
 
-### Updating
+### Updating Phoenix
 
-If HACS does not immediately detect a new commit:
-
-1. Open **HACS → Integrations → Phoenix AI Trader**.
-2. Use **Redownload** / **Download again**.
-3. Restart Home Assistant.
-4. Check the public status file:
+If HACS does not immediately show the update, open Phoenix in HACS and use:
 
 ```text
-/local/phoenix-ai-trader-ha/status.json
+Redownload / Scarica di nuovo
 ```
 
-The `version` field should match the current release.
+Then restart Home Assistant.
+
+After updating, the public status file should report:
+
+```json
+"version": "0.4.1"
+```
+
+Public status URL example:
+
+```text
+http://HOME_ASSISTANT_IP:8123/local/phoenix-ai-trader-ha/status.json
+```
 
 ---
 
@@ -386,13 +408,6 @@ The `version` field should match the current release.
 ```
 
 The integration automatically generates all required files inside this folder.
-
-Public status mirrors are also written to:
-
-```text
-/config/www/phoenix-ai-trader-ha/status.json
-/config/www/phoenix-ai-trader-ha/phoenix_status.json
-```
 
 ---
 
@@ -440,7 +455,7 @@ Phoenix AI Trader **does not execute real trades**, **does not manage real funds
 | 🐛 **Bugs** | Open a GitHub Issue |
 | 💡 **Ideas** | Use GitHub Discussions or contact the developer |
 | 🔑 **License** | Annual license · Launch offer: **9.99 € for 15 days**, then **19.99 €/year** · PayPal purchase → signed license by email |
-| 📱 **Telegram** | Requires an already configured Home Assistant Telegram `notify` service |
+| 📱 **Telegram** | Requires an already configured Home Assistant Telegram `notify` service and may require a Telegram Chat ID / target |
 | 🇮🇹 **Italian support** | Italian documentation available in [README.it.md](README.it.md) |
 
 ---
@@ -449,7 +464,9 @@ Phoenix AI Trader **does not execute real trades**, **does not manage real funds
 
 Upcoming releases may include:
 
-- 📈 Real market data integration
+- 📱 Advanced Telegram notifications
+- 📈 Profit / loss alerts
+- 🤖 AI trading assistant
 - 📊 Interactive charts
 - 📄 PDF reports
 - 📈 Strategy comparison
