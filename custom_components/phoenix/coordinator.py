@@ -21,6 +21,7 @@ UPDATE_CHECK_INTERVAL_MINUTES = 5
 SCAN_INTERVAL_SECONDS = 60
 TOP_SETUP_ALERT_SCORE = 80
 TOP_SETUP_ALERT_COOLDOWN_HOURS = 3
+TELEGRAM_MARKDOWN_V2_RESERVED = "_*[]()~`>#+-=|{}.!"
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -43,6 +44,11 @@ def _version_tuple(value: str | None) -> tuple[int, ...]:
         clean = "".join(ch for ch in part if ch.isdigit())
         numbers.append(int(clean or 0))
     return tuple(numbers)
+
+
+def _telegram_escape(value: Any) -> str:
+    text = str(value or "")
+    return "".join(f"\\{char}" if char in TELEGRAM_MARKDOWN_V2_RESERVED else char for char in text)
 
 
 class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -138,7 +144,7 @@ class PhoenixDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return False
 
         _settings, domain, service = config
-        service_data = {"message": message}
+        service_data = {"message": _telegram_escape(message)}
 
         try:
             await self.hass.services.async_call(
