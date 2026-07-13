@@ -77,8 +77,18 @@ def _mission_changed(settings: dict[str, Any], start_capital: float, target_capi
     )
 
 
+def _is_status_file(path: str) -> bool:
+    return os.path.basename(path) == STATUS_FILENAME
+
+
+def _prepare_payload_for_write(path: str, payload: Any) -> Any:
+    if _is_status_file(path) and isinstance(payload, dict):
+        return {**payload, "version": PHOENIX_VERSION}
+    return payload
+
+
 def _mirror_public_status(path: str, payload: Any) -> None:
-    if os.path.basename(path) != STATUS_FILENAME:
+    if not _is_status_file(path):
         return
     try:
         os.makedirs(PUBLIC_STATUS_DIR, exist_ok=True)
@@ -91,6 +101,7 @@ def _mirror_public_status(path: str, payload: Any) -> None:
 
 
 def write_json(path: str, payload: Any) -> None:
+    payload = _prepare_payload_for_write(path, payload)
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
