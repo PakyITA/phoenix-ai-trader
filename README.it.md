@@ -43,7 +43,6 @@ La versione **0.4.1** migliora soprattutto affidabilità Telegram e documentazio
 - Invii Telegram automatici in modalità bloccante per mostrare meglio gli errori nei log.
 - Versione pubblica nello `status.json` allineata alla versione interna.
 - Aggiunto un changelog italiano dedicato.
-- Esempi Telegram resi generici con `notify.telegram_user` e `notify.user`.
 - Standardizzati i README: `README.md` per inglese e `README.it.md` per italiano.
 
 Dettagli completi in [CHANGELOG.it.md](CHANGELOG.it.md).
